@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Transfer 後台</title>
+
+    <link
+        rel="stylesheet"
+        href="dashboard.css"
+    >
+</head>
+
+<body>
+
+    <!-- ==================================================
+         上方 Header
+    ================================================== -->
+
+    <header class="top-header">
+
+        <!-- 日期 -->
+        <div class="date-area">
+
+            <button
+                class="date-arrow"
+                id="previousDate"
+                type="button"
+                aria-label="前一天"
+            >
+                ◀
+            </button>
+
+            <div class="date-card">
+
+                <div
+                    class="year"
+                    id="currentYear"
+                >
+                    2026
+                </div>
+
+                <div
+                    class="date"
+                    id="currentDate"
+                >
+                    8/24
+                </div>
+
+            </div>
+
+            <button
+                class="date-arrow"
+                id="nextDate"
+                type="button"
+                aria-label="後一天"
+            >
+                ▶
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             全體 / 單人模式
+        ================================================== -->
+
+        <div class="mode-area">
+
+            <div class="mode-select">
+
+                <button
+                    class="mode-button"
+                    id="modeButton"
+                    type="button"
+                >
+
+                    <span id="modeButtonText">
+                        全體模式
+                    </span>
+
+                    <span class="mode-triangle">
+                        ▼
+                    </span>
+
+                </button>
+
+
+                <div
+                    class="mode-dropdown"
+                    id="modeDropdown"
+                >
+
+                    <button
+                        type="button"
+                        data-mode="group"
+                    >
+                        全體模式
+                    </button>
+
+                    <button
+                        type="button"
+                        data-mode="single"
+                    >
+                        單人模式
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="mode-subtitle"
+                id="modeSubtitle"
+            >
+                當日遊玩數
+            </div>
+
+        </div>
+
+
+        <!-- 右上角 -->
+        <button
+            class="menu-button"
+            type="button"
+            aria-label="選單"
+        >
+            ☰
+        </button>
+
+    </header>
+
+
+    <!-- ==================================================
+         全體模式
+    ================================================== -->
+
+    <main
+        class="main-content"
+        id="groupModeContent"
+    >
+
+        <div class="navigation-row">
+
+            <nav class="category-nav">
+
+                <button
+                    class="category-button active"
+                    type="button"
+                    data-page="success"
+                >
+                    總成功率
+                </button>
+
+                <button
+                    class="category-button"
+                    type="button"
+                    data-page="visual"
+                >
+                    視覺資訊
+                </button>
+
+                <button
+                    class="category-button"
+                    type="button"
+                    data-page="memory"
+                >
+                    記憶力
+                </button>
+
+                <button
+                    class="category-button"
+                    type="button"
+                    data-page="hearing"
+                >
+                    聽力資訊
+                </button>
+
+                <button
+                    class="category-button"
+                    type="button"
+                    data-page="analysis"
+                >
+                    總分析
+                </button>
+
+            </nav>
+
+
+            <div class="search-box">
+
+                <input
+                    id="groupSearchInput"
+                    type="text"
+                    placeholder="查詢長輩編號"
+                    autocomplete="off"
+                >
+
+                <span class="search-icon">
+                    ⌕
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="page-description"
+            id="pageDescription"
+        >
+            透過總成功率可以看到成功、失敗與總數
+        </div>
+
+
+        <!-- 長輩卡片由 JS 自動建立 -->
+        <section
+            class="people-grid"
+            id="peopleGrid"
+        >
+        </section>
+
+    </main>
+
+
+    <!-- ==================================================
+         單人模式
+    ================================================== -->
+
+    <main
+        class="single-content hidden"
+        id="singleModeContent"
+    >
+
+        <!-- ==================================================
+             查詢
+        ================================================== -->
+
+        <section
+            class="single-panel"
+            id="singleSearchPanel"
+        >
+
+            <h1>
+                查詢長輩編號
+            </h1>
+
+            <div class="single-search-box">
+
+                <input
+                    id="singleSearchInput"
+                    type="text"
+                    placeholder="請輸入長輩編號"
+                    autocomplete="off"
+                >
+
+                <button
+                    id="singleSearchButton"
+                    type="button"
+                >
+                    ⌕
+                </button>
+
+            </div>
+
+            <button
+                class="single-text-button"
+                id="openAddElder"
+                type="button"
+            >
+                新增長輩資料
+            </button>
+
+        </section>
+
+
+        <!-- ==================================================
+             新增
+        ================================================== -->
+
+        <section
+            class="single-panel hidden"
+            id="singleAddPanel"
+        >
+
+            <h1>
+                新增長輩編號
+            </h1>
+
+            <div class="single-search-box">
+
+                <input
+                    id="newElderInput"
+                    type="text"
+                    placeholder="請輸入長輩編號"
+                    autocomplete="off"
+                >
+
+                <button
+                    id="addElderButton"
+                    type="button"
+                >
+                    ＋
+                </button>
+
+            </div>
+
+            <button
+                class="single-text-button"
+                id="backToSearch"
+                type="button"
+            >
+                查詢長輩編號
+            </button>
+
+        </section>
+
+
+        <!-- ==================================================
+             個人資料頁
+        ================================================== -->
+
+        <section
+            class="single-profile hidden"
+            id="singleProfilePanel"
+        >
+
+            <!-- 右上角操作 -->
+            <div class="profile-top-row">
+
+                <div class="profile-action-buttons">
+
+                    <button
+                        id="deleteElderButton"
+                        class="back-search-button"
+                        type="button"
+                    >
+                        刪除
+                    </button>
+
+                    <button
+                        id="backToSingleSearch"
+                        class="back-search-button"
+                        type="button"
+                    >
+                        返回查詢
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- 六個分析 -->
+            <div class="navigation-row">
+
+                <nav class="category-nav">
+
+                    <button
+                        class="profile-category-button active"
+                        type="button"
+                        data-profile-page="success"
+                    >
+                        總成功率
+                    </button>
+
+                    <button
+                        class="profile-category-button"
+                        type="button"
+                        data-profile-page="visual"
+                    >
+                        視覺資訊
+                    </button>
+
+                    <button
+                        class="profile-category-button"
+                        type="button"
+                        data-profile-page="memory"
+                    >
+                        記憶力
+                    </button>
+
+                    <button
+                        class="profile-category-button"
+                        type="button"
+                        data-profile-page="hearing"
+                    >
+                        聽力資訊
+                    </button>
+
+                    <button
+                        class="profile-category-button"
+                        type="button"
+                        data-profile-page="analysis"
+                    >
+                        總分析
+                    </button>
+
+                </nav>
+
+            </div>
+
+
+            <div
+                class="page-description"
+                id="profilePageDescription"
+            >
+                透過總成功率可以看到成功、失敗與總數
+            </div>
+
+
+            <section class="profile-data-area">
+
+                <div
+                    class="profile-content"
+                    id="profileContent"
+                >
+                    資料讀取中...
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==================================================
+         刪除 Double Check
+    ================================================== -->
+
+    <div
+        class="delete-modal-overlay hidden"
+        id="deleteModal"
+    >
+
+        <div class="delete-modal">
+
+            <div
+                class="delete-modal-text"
+                id="deleteModalText"
+            >
+                是否確認刪除 XXXX
+            </div>
+
+
+            <div class="delete-modal-buttons">
+
+                <button
+                    id="confirmDeleteButton"
+                    class="delete-modal-button"
+                    type="button"
+                >
+                    確認
+                </button>
+
+                <button
+                    id="cancelDeleteButton"
+                    class="delete-modal-button"
+                    type="button"
+                >
+                    取消
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script
+        type="module"
+        src="dashboard.js"
+    ></script>
+
+</body>
+
+</html>
