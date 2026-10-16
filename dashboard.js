@@ -1,3 +1,4 @@
+
 import {
     initializeApp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -10,8 +11,9 @@ import {
     remove
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
 
-
-/* Firebase */
+/* ==============================
+   Firebase
+============================== */
 
 const firebaseConfig = {
     apiKey: "AIzaSyAaNj6Znk30zLZM3QVvEEPdSnPFjJyr_LE",
@@ -24,1907 +26,1100 @@ const firebaseConfig = {
     appId: "1:1041873060739:web:a61497c1cfe0854a8becb6"
 };
 
-const firebaseApp =
-    initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig);
+const database = getDatabase(firebaseApp);
+
+console.log("Firebase Realtime Database 連線完成！");
 
-const database =
-    getDatabase(firebaseApp);
+/* ==============================
+   主程式
+============================== */
 
-console.log(
-    "Firebase Realtime Database 連線完成！"
-);
+document.addEventListener("DOMContentLoaded", function () {
 
+    const descriptions = {
+        success: "透過總成功率可以看到成功、失敗與總數",
+        visual: "亮起第一顆燈後，使用者幾秒成功接上第一條線",
+        memory: "聲音播放後，燈光提示出現幾次",
+        hearing: "聲音播放後，使用者成功接上第二條線的平均時間",
+        focus: "同時有1、2、3條線占整個遊戲時間的比例",
+        analysis: "透過總分析可以對比全體遊玩資料"
+    };
 
-/* 開始 */
+    let elderIds = [];
+    let currentGroupPage = "success";
+    let currentProfilePage = "success";
+    let currentProfileElderId = null;
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function ()
-    {
-        const descriptions = {
-            success:
-                "透過總成功率可以看到成功、失敗與總數",
+    // 避免快速切換日期時，舊資料覆蓋新資料
+    let groupRequestVersion = 0;
+    let profileRequestVersion = 0;
 
-            visual:
-                "亮起第一顆燈後，使用者幾秒成功接上第一條線",
+    /* ==============================
+       取得 HTML 元素
+    ============================== */
 
-            memory:
-                "聲音播放後，燈光提示出現幾次",
+    const $ = (id) => document.getElementById(id);
 
-            hearing:
-                "聲音播放後，使用者成功接上第二條線的平均時間",
+    const categoryButtons =
+        document.querySelectorAll(".category-button");
 
-            analysis:
-                "透過總分析可以對比全體遊玩資料"
-        };
+    const profileCategoryButtons =
+        document.querySelectorAll(".profile-category-button");
 
+    const pageDescription = $("pageDescription");
+    const peopleGrid = $("peopleGrid");
+    const groupSearchInput = $("groupSearchInput");
 
-        let elderIds = [];
+    const previousDateButton = $("previousDate");
+    const nextDateButton = $("nextDate");
+    const currentYearText = $("currentYear");
+    const currentDateText = $("currentDate");
 
+    const modeButton = $("modeButton");
+    const modeButtonText = $("modeButtonText");
+    const modeDropdown = $("modeDropdown");
+    const modeOptions = modeDropdown.querySelectorAll("button");
+    const modeSubtitle = $("modeSubtitle");
 
-        /* 全體模式 */
+    const groupModeContent = $("groupModeContent");
+    const singleModeContent = $("singleModeContent");
 
-        const categoryButtons =
-            document.querySelectorAll(
-                ".category-button"
-            );
+    const singleSearchPanel = $("singleSearchPanel");
+    const singleSearchInput = $("singleSearchInput");
+    const singleSearchButton = $("singleSearchButton");
 
-        const pageDescription =
-            document.getElementById(
-                "pageDescription"
-            );
+    const singleAddPanel = $("singleAddPanel");
+    const newElderInput = $("newElderInput");
+    const addElderButton = $("addElderButton");
+    const openAddElder = $("openAddElder");
+    const backToSearch = $("backToSearch");
 
-        const peopleGrid =
-            document.getElementById(
-                "peopleGrid"
-            );
+    const singleProfilePanel = $("singleProfilePanel");
+    const backToSingleSearch = $("backToSingleSearch");
+    const profilePageDescription = $("profilePageDescription");
+    const profileContent = $("profileContent");
 
-        const groupSearchInput =
-            document.getElementById(
-                "groupSearchInput"
-            );
+    const deleteElderButton = $("deleteElderButton");
+    const deleteModal = $("deleteModal");
+    const deleteModalText = $("deleteModalText");
+    const confirmDeleteButton = $("confirmDeleteButton");
+    const cancelDeleteButton = $("cancelDeleteButton");
 
-        let currentGroupPage =
-            "success";
+    /* ==============================
+       日期
+    ============================== */
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        /* 日期 */
+    let selectedDate = new Date(today);
 
-        const previousDateButton =
-            document.getElementById(
-                "previousDate"
-            );
+    function getSelectedDateString() {
+        const year = selectedDate.getFullYear();
 
-        const nextDateButton =
-            document.getElementById(
-                "nextDate"
-            );
+        const month = String(
+            selectedDate.getMonth() + 1
+        ).padStart(2, "0");
 
-        const currentYearText =
-            document.getElementById(
-                "currentYear"
-            );
+        const day = String(
+            selectedDate.getDate()
+        ).padStart(2, "0");
 
-        const currentDateText =
-            document.getElementById(
-                "currentDate"
-            );
+        return `${year}-${month}-${day}`;
+    }
 
-        const today =
-            new Date();
+    function updateDateDisplay() {
+        currentYearText.textContent =
+            selectedDate.getFullYear();
 
-        today.setHours(
-            0,
-            0,
-            0,
-            0
-        );
+        currentDateText.textContent =
+            `${selectedDate.getMonth() + 1}/${selectedDate.getDate()}`;
 
-        let selectedDate =
-            new Date(today);
+        const isToday =
+            selectedDate.getTime() >= today.getTime();
 
+        nextDateButton.disabled = isToday;
+        nextDateButton.style.opacity = isToday ? "0.3" : "1";
+        nextDateButton.style.cursor =
+            isToday ? "default" : "pointer";
 
-        /* 模式 */
-
-        const modeButton =
-            document.getElementById(
-                "modeButton"
-            );
-
-        const modeButtonText =
-            document.getElementById(
-                "modeButtonText"
-            );
-
-        const modeDropdown =
-            document.getElementById(
-                "modeDropdown"
-            );
-
-        const modeOptions =
-            modeDropdown.querySelectorAll(
-                "button"
-            );
-
-        const modeSubtitle =
-            document.getElementById(
-                "modeSubtitle"
-            );
-
-        const groupModeContent =
-            document.getElementById(
-                "groupModeContent"
-            );
-
-        const singleModeContent =
-            document.getElementById(
-                "singleModeContent"
-            );
-
-
-        /* 單人查詢 */
-
-        const singleSearchPanel =
-            document.getElementById(
-                "singleSearchPanel"
-            );
-
-        const singleSearchInput =
-            document.getElementById(
-                "singleSearchInput"
-            );
-
-        const singleSearchButton =
-            document.getElementById(
-                "singleSearchButton"
-            );
-
-
-        /* 單人新增 */
-
-        const singleAddPanel =
-            document.getElementById(
-                "singleAddPanel"
-            );
-
-        const newElderInput =
-            document.getElementById(
-                "newElderInput"
-            );
-
-        const addElderButton =
-            document.getElementById(
-                "addElderButton"
-            );
-
-        const openAddElder =
-            document.getElementById(
-                "openAddElder"
-            );
-
-        const backToSearch =
-            document.getElementById(
-                "backToSearch"
-            );
-
-
-        /* 個人頁 */
-
-        const singleProfilePanel =
-            document.getElementById(
-                "singleProfilePanel"
-            );
-
-        const backToSingleSearch =
-            document.getElementById(
-                "backToSingleSearch"
-            );
-
-        const profileCategoryButtons =
-            document.querySelectorAll(
-                ".profile-category-button"
-            );
-
-        const profilePageDescription =
-            document.getElementById(
-                "profilePageDescription"
-            );
-
-        const profileContent =
-            document.getElementById(
-                "profileContent"
-            );
-
-        let currentProfilePage =
-            "success";
-
-        let currentProfileElderId =
-            null;
-
-
-        /* 刪除 */
-
-        const deleteElderButton =
-            document.getElementById(
-                "deleteElderButton"
-            );
-
-        const deleteModal =
-            document.getElementById(
-                "deleteModal"
-            );
-
-        const deleteModalText =
-            document.getElementById(
-                "deleteModalText"
-            );
-
-        const confirmDeleteButton =
-            document.getElementById(
-                "confirmDeleteButton"
-            );
-
-        const cancelDeleteButton =
-            document.getElementById(
-                "cancelDeleteButton"
-            );
-
-
-        /* 日期格式 */
-
-        function getSelectedDateString()
-        {
-            const year =
-                selectedDate.getFullYear();
-
-            const month =
-                String(
-                    selectedDate.getMonth() + 1
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-            const day =
-                String(
-                    selectedDate.getDate()
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-            return (
-                year +
-                "-" +
-                month +
-                "-" +
-                day
-            );
-        }
-
-
-        /* 讀取長輩 */
-
-        async function loadElderIdsFromFirebase()
-        {
-            try
-            {
-                const playersReference =
-                    ref(
-                        database,
-                        "players"
-                    );
-
-                const snapshot =
-                    await get(
-                        playersReference
-                    );
-
-                if (!snapshot.exists())
-                {
-                    elderIds = [];
-
-                    console.log(
-                        "Firebase目前沒有任何長輩編號。"
-                    );
-
-                    return;
-                }
-
-                const players =
-                    snapshot.val();
-
-                elderIds =
-                    Object.keys(players)
-                        .sort(
-                            function (a, b)
-                            {
-                                return a.localeCompare(
-                                    b,
-                                    undefined,
-                                    {
-                                        numeric: true,
-                                        sensitivity: "base"
-                                    }
-                                );
-                            }
-                        );
-            }
-            catch (error)
-            {
-                console.error(
-                    "讀取長輩編號失敗：",
-                    error
-                );
-
-                elderIds = [];
-            }
-        }
-
-
-        /* 建立卡片 */
-
-        function renderElderCards()
-        {
-            peopleGrid.innerHTML =
-                "";
-
-            elderIds.forEach(
-                function (elderId)
-                {
-                    const card =
-                        document.createElement(
-                            "article"
-                        );
-
-                    card.className =
-                        "person-card";
-
-                    card.dataset.elderId =
-                        elderId;
-
-                    const title =
-                        document.createElement(
-                            "h2"
-                        );
-
-                    title.textContent =
-                        elderId;
-
-                    const data =
-                        document.createElement(
-                            "div"
-                        );
-
-                    data.className =
-                        "person-data";
-
-                    data.id =
-                        "elderData_" +
-                        elderId;
-
-                    data.textContent =
-                        "資料讀取中...";
-
-                    card.appendChild(
-                        title
-                    );
-
-                    card.appendChild(
-                        data
-                    );
-
-                    peopleGrid.appendChild(
-                        card
-                    );
-                }
-            );
-
+        if (!groupModeContent.classList.contains("hidden")) {
             updateAllElderCards();
         }
 
+        if (!singleProfilePanel.classList.contains("hidden")) {
+            updateProfileContent();
+        }
+    }
 
-        /* 數字資料 */
+    previousDateButton.addEventListener("click", function () {
+        selectedDate.setDate(selectedDate.getDate() - 1);
+        updateDateDisplay();
+    });
 
-        function normalizeNumberList(value)
-        {
-            if (!value)
-            {
-                return [];
+    nextDateButton.addEventListener("click", function () {
+        const next = new Date(selectedDate);
+        next.setDate(next.getDate() + 1);
+
+        if (next.getTime() > today.getTime()) {
+            return;
+        }
+
+        selectedDate = next;
+        updateDateDisplay();
+    });
+
+    /* ==============================
+       Firebase 長輩編號
+    ============================== */
+
+    async function loadElderIdsFromFirebase() {
+        try {
+            const snapshot = await get(
+                ref(database, "players")
+            );
+
+            if (!snapshot.exists()) {
+                elderIds = [];
+                return;
             }
 
-            if (Array.isArray(value))
-            {
-                return value.filter(
-                    function (item)
+            elderIds = Object.keys(snapshot.val()).sort(
+                (a, b) => a.localeCompare(
+                    b,
+                    undefined,
                     {
-                        return item !== null &&
-                               item !== undefined;
+                        numeric: true,
+                        sensitivity: "base"
                     }
-                );
-            }
+                )
+            );
 
-            if (typeof value === "object")
-            {
-                return Object.keys(value)
-                    .sort(
-                        function (a, b)
-                        {
-                            return Number(a) -
-                                   Number(b);
-                        }
-                    )
-                    .map(
-                        function (key)
-                        {
-                            return value[key];
-                        }
-                    );
-            }
+        } catch (error) {
+            console.error("讀取長輩編號失敗：", error);
+            elderIds = [];
+        }
+    }
 
+    /* ==============================
+       全體模式卡片
+    ============================== */
+
+    function renderElderCards() {
+        peopleGrid.innerHTML = "";
+
+        elderIds.forEach(function (elderId) {
+            const card = document.createElement("article");
+            card.className = "person-card";
+            card.dataset.elderId = elderId;
+
+            const title = document.createElement("h2");
+            title.textContent = elderId;
+
+            const data = document.createElement("div");
+            data.className = "person-data";
+            data.id = "elderData_" + elderId;
+            data.textContent = "資料讀取中...";
+
+            card.appendChild(title);
+            card.appendChild(data);
+            peopleGrid.appendChild(card);
+        });
+
+        filterGroupCards();
+        updateAllElderCards();
+    }
+
+    function filterGroupCards() {
+        const keyword = groupSearchInput.value.trim();
+
+        peopleGrid.querySelectorAll(".person-card")
+            .forEach(function (card) {
+                card.style.display =
+                    !keyword ||
+                    card.dataset.elderId.includes(keyword)
+                        ? ""
+                        : "none";
+            });
+    }
+
+    groupSearchInput.addEventListener(
+        "input",
+        filterGroupCards
+    );
+
+    /* ==============================
+       數字處理
+    ============================== */
+
+    function safeNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : 0;
+    }
+
+    function safeCount(value) {
+        return Math.max(0, safeNumber(value));
+    }
+
+    function normalizeNumberList(value) {
+        if (!value) {
             return [];
         }
 
-
-        /* 讀取紀錄 */
-
-        async function loadElderDailyRecords(
-            elderId
-        )
-        {
-            try
-            {
-                const selectedDateString =
-                    getSelectedDateString();
-
-                const sessionsPath =
-                    "players/" +
-                    elderId +
-                    "/dates/" +
-                    selectedDateString +
-                    "/sessions";
-
-                const sessionsReference =
-                    ref(
-                        database,
-                        sessionsPath
-                    );
-
-                const snapshot =
-                    await get(
-                        sessionsReference
-                    );
-
-                if (!snapshot.exists())
-                {
-                    return [];
-                }
-
-                const sessions =
-                    snapshot.val();
-
-                const result =
-                    [];
-
-                Object.entries(
-                    sessions
-                ).forEach(
-                    function (
-                        [
-                            sessionId,
-                            session
-                        ]
-                    )
-                    {
-                        if (!session)
-                        {
-                            return;
-                        }
-
-                        result.push(
-                            {
-                                id:
-                                    sessionId,
-
-                                ...session
-                            }
-                        );
-                    }
-                );
-
-                result.sort(
-                    function (a, b)
-                    {
-                        const timeA =
-                            a.playedAt ??
-                            "";
-
-                        const timeB =
-                            b.playedAt ??
-                            "";
-
-                        return timeA.localeCompare(
-                            timeB
-                        );
-                    }
-                );
-
-                return result;
-            }
-            catch (error)
-            {
-                console.error(
-                    "讀取編號 " +
-                    elderId +
-                    " 的 Firebase 紀錄失敗：",
-                    error
-                );
-
-                return [];
-            }
+        if (Array.isArray(value)) {
+            return value.filter(
+                item => item !== null && item !== undefined
+            );
         }
 
+        if (typeof value === "object") {
+            return Object.keys(value)
+                .sort((a, b) => Number(a) - Number(b))
+                .map(key => value[key]);
+        }
 
-        /* 全體紀錄 */
+        return [];
+    }
 
-        function createLatestRecordHtml(
-            record,
-            page
-        )
-        {
-            const latestTime =
-                record.playedAt
-                    ?
-                    record.playedAt.substring(
-                        11,
-                        16
-                    )
-                    :
-                    "--:--";
+    function getSuccessData(record) {
+        const completed = safeCount(record.completedCalls);
+        const failed = safeCount(record.failedCalls);
+        const total = completed + failed;
 
-            if (page === "success")
-            {
-                const completed =
-                    Number(
-                        record.completedCalls ??
-                        0
-                    );
+        const rate = total > 0
+            ? completed / total * 100
+            : 0;
 
-                const failed =
-                    Number(
-                        record.failedCalls ??
-                        0
-                    );
+        return {
+            completed,
+            failed,
+            total,
+            rate
+        };
+    }
 
-                const total =
-                    completed +
-                    failed;
+    function getRecordTime(record) {
+        if (
+            typeof record.playedAt === "string" &&
+            record.playedAt.length >= 16
+        ) {
+            return record.playedAt.substring(11, 16);
+        }
 
-                const rate =
-                    total > 0
-                        ?
-                        completed /
-                        total *
-                        100
-                        :
-                        0;
+        return "--:--";
+    }
 
-                return `
-                    <div class="record-detail">
-                        最新紀錄：${latestTime}
-                        <br><br>
-                        成功：${completed} 次
-                        <br>
-                        失敗：${failed} 次
-                        <br>
-                        總數：${total} 次
-                        <br>
-                        成功率：${rate.toFixed(1)}%
-                    </div>
-                `;
+    function formatTimeList(value) {
+        const times = normalizeNumberList(value);
+
+        if (times.length === 0) {
+            return "無反應時間紀錄<br>";
+        }
+
+        return times.map((time, index) => {
+            return `第${index + 1}通：
+                    ${safeNumber(time).toFixed(2)} 秒<br>`;
+        }).join("");
+    }
+
+    /* ==============================
+       讀取每日每局資料
+    ============================== */
+
+    async function loadElderDailyRecords(
+        elderId,
+        dateString = getSelectedDateString()
+    ) {
+        try {
+            const sessionsPath =
+                `players/${elderId}/dates/${dateString}/sessions`;
+
+            const snapshot = await get(
+                ref(database, sessionsPath)
+            );
+
+            if (!snapshot.exists()) {
+                return [];
             }
 
-            if (page === "visual")
-            {
-                const times =
-                    normalizeNumberList(
-                        record.visualTimes
-                    );
+            const sessions = snapshot.val();
 
-                let html =
-                    "";
+            const result = Object.entries(sessions)
+                .filter(([, session]) =>
+                    session && typeof session === "object"
+                )
+                .map(([sessionId, session]) => ({
+                    ...session,
+                    id: sessionId
+                }));
 
-                times.forEach(
-                    function (
-                        time,
-                        index
-                    )
-                    {
-                        html +=
-                            `第${index + 1}通：
-                            ${Number(time).toFixed(2)}
-                            秒<br>`;
-                    }
-                );
+            // 先按時間由舊到新排列
+            result.sort((a, b) => {
+                const timeA = String(a.playedAt ?? "");
+                const timeB = String(b.playedAt ?? "");
 
-                if (times.length === 0)
-                {
-                    html =
-                        "無視覺反應紀錄<br>";
+                const comparison = timeA.localeCompare(timeB);
+
+                if (comparison !== 0) {
+                    return comparison;
                 }
 
-                const average =
-                    Number(
-                        record.averageVisualTime ??
-                        0
-                    );
+                return String(a.id).localeCompare(String(b.id));
+            });
 
-                return `
-                    <div class="record-detail">
-                        最新紀錄：${latestTime}
-                        <br><br>
-                        ${html}
-                        <strong>
-                            平均：
-                            ${average.toFixed(2)}
-                            秒
-                        </strong>
-                    </div>
-                `;
-            }
+            return result;
 
-            if (page === "memory")
-            {
-                return `
-                    <div class="record-detail">
-                        最新紀錄：${latestTime}
-                        <br><br>
-                        提示次數：
-                        ${record.hintCount ?? 0}
-                        次
-                    </div>
-                `;
-            }
+        } catch (error) {
+            console.error(
+                `讀取編號 ${elderId} 的紀錄失敗：`,
+                error
+            );
 
-            if (page === "hearing")
-            {
-                const times =
-                    normalizeNumberList(
-                        record.hearingTimes
-                    );
+            return [];
+        }
+    }
 
-                let html =
-                    "";
+    /* ==============================
+       全體模式：最新一筆
+    ============================== */
 
-                times.forEach(
-                    function (
-                        time,
-                        index
-                    )
-                    {
-                        html +=
-                            `第${index + 1}通：
-                            ${Number(time).toFixed(2)}
-                            秒<br>`;
-                    }
-                );
+    function createLatestRecordHtml(record, page) {
+        const time = getRecordTime(record);
 
-                if (times.length === 0)
-                {
-                    html =
-                        "無聽力反應紀錄<br>";
-                }
-
-                const average =
-                    Number(
-                        record.averageHearingTime ??
-                        0
-                    );
-
-                return `
-                    <div class="record-detail">
-                        最新紀錄：${latestTime}
-                        <br><br>
-                        ${html}
-                        <strong>
-                            平均：
-                            ${average.toFixed(2)}
-                            秒
-                        </strong>
-                    </div>
-                `;
-            }
-
-            const completed =
-                Number(
-                    record.completedCalls ??
-                    0
-                );
-
-            const failed =
-                Number(
-                    record.failedCalls ??
-                    0
-                );
-
-            const total =
-                completed +
-                failed;
-
-            const rate =
-                total > 0
-                    ?
-                    completed /
-                    total *
-                    100
-                    :
-                    0;
+        if (page === "success") {
+            const data = getSuccessData(record);
 
             return `
                 <div class="record-detail">
-                    最新紀錄：${latestTime}
+                    最新紀錄：${time}
                     <br><br>
-                    成功率：${rate.toFixed(1)}%
-                    <br>
-                    平均視覺反應：
-                    ${Number(
-                        record.averageVisualTime ??
-                        0
-                    ).toFixed(2)}
-                    秒
-                    <br>
-                    提示次數：
-                    ${record.hintCount ?? 0}
-                    次
-                    <br>
-                    平均聽力反應：
-                    ${Number(
-                        record.averageHearingTime ??
-                        0
-                    ).toFixed(2)}
-                    秒
+                    成功：${data.completed} 次<br>
+                    失敗：${data.failed} 次<br>
+                    總數：${data.total} 次<br>
+                    成功率：${data.rate.toFixed(1)}%
                 </div>
             `;
         }
 
+        if (page === "visual") {
+            return `
+                <div class="record-detail">
+                    最新紀錄：${time}
+                    <br><br>
+                    ${formatTimeList(record.visualTimes)}
+                    <strong>
+                        平均：
+                        ${safeNumber(record.averageVisualTime).toFixed(2)}
+                        秒
+                    </strong>
+                </div>
+            `;
+        }
 
-        /* 單人紀錄 */
+        if (page === "memory") {
+            return `
+                <div class="record-detail">
+                    最新紀錄：${time}
+                    <br><br>
+                    提示次數：
+                    ${safeCount(record.hintCount)} 次
+                </div>
+            `;
+        }
 
-        function createProfileRecordHtml(
-            record,
-            page
-        )
-        {
-            const time =
-                record.playedAt
-                    ?
-                    record.playedAt.substring(
-                        11,
-                        16
+        if (page === "hearing") {
+            return `
+                <div class="record-detail">
+                    最新紀錄：${time}
+                    <br><br>
+                    ${formatTimeList(record.hearingTimes)}
+                    <strong>
+                        平均：
+                        ${safeNumber(record.averageHearingTime).toFixed(2)}
+                        秒
+                    </strong>
+                </div>
+            `;
+        }
+
+        const data = getSuccessData(record);
+
+        return `
+            <div class="record-detail">
+                最新紀錄：${time}
+                <br><br>
+                成功率：${data.rate.toFixed(1)}%<br>
+                平均視覺反應：
+                ${safeNumber(record.averageVisualTime).toFixed(2)} 秒
+                <br>
+                提示次數：
+                ${safeCount(record.hintCount)} 次
+                <br>
+                平均聽力反應：
+                ${safeNumber(record.averageHearingTime).toFixed(2)} 秒
+            </div>
+        `;
+    }
+
+    async function updateAllElderCards() {
+        const version = ++groupRequestVersion;
+        const dateString = getSelectedDateString();
+        const page = currentGroupPage;
+
+        for (const elderId of elderIds) {
+            if (version !== groupRequestVersion) {
+                return;
+            }
+
+            const dataElement = $("elderData_" + elderId);
+
+            if (!dataElement) {
+                continue;
+            }
+
+            dataElement.textContent = "資料讀取中...";
+
+            const records = await loadElderDailyRecords(
+                elderId,
+                dateString
+            );
+
+            if (version !== groupRequestVersion) {
+                return;
+            }
+
+            if (!dataElement.isConnected) {
+                continue;
+            }
+
+            if (records.length === 0) {
+                dataElement.textContent = "當日無遊玩紀錄";
+                continue;
+            }
+
+            const latest = records[records.length - 1];
+
+            dataElement.innerHTML =
+                createLatestRecordHtml(latest, page);
+        }
+    }
+
+    /* ==============================
+       全體模式頁籤
+    ============================== */
+
+    categoryButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+
+            categoryButtons.forEach(item =>
+                item.classList.remove("active")
+            );
+
+            button.classList.add("active");
+
+            currentGroupPage = button.dataset.page;
+
+            pageDescription.textContent =
+                descriptions[currentGroupPage];
+
+            updateAllElderCards();
+        });
+    });
+
+    /* ==============================
+       模式切換
+    ============================== */
+
+    modeButton.addEventListener("click", function () {
+        modeDropdown.classList.toggle("show");
+    });
+
+    modeOptions.forEach(function (option) {
+        option.addEventListener("click", function () {
+            const mode = option.dataset.mode;
+
+            if (mode === "group") {
+                document.body.classList.remove(
+                    "single-mode-active"
+                );
+
+                modeButtonText.textContent = "全體模式";
+                modeSubtitle.textContent = "當日遊玩數";
+
+                groupModeContent.classList.remove("hidden");
+                singleModeContent.classList.add("hidden");
+
+                profileRequestVersion++;
+                updateAllElderCards();
+
+            } else {
+                document.body.classList.add(
+                    "single-mode-active"
+                );
+
+                modeButtonText.textContent = "單人模式";
+
+                groupModeContent.classList.add("hidden");
+                singleModeContent.classList.remove("hidden");
+
+                groupRequestVersion++;
+                showSearchPanel();
+            }
+
+            modeDropdown.classList.remove("show");
+        });
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest(".mode-select")) {
+            modeDropdown.classList.remove("show");
+        }
+    });
+
+    /* ==============================
+       單人模式：頁面切換
+    ============================== */
+
+    function showSearchPanel() {
+        profileRequestVersion++;
+
+        singleSearchPanel.classList.remove("hidden");
+        singleAddPanel.classList.add("hidden");
+        singleProfilePanel.classList.add("hidden");
+
+        modeSubtitle.textContent = "請查詢長輩編號";
+    }
+
+    function showAddPanel() {
+        profileRequestVersion++;
+
+        singleSearchPanel.classList.add("hidden");
+        singleAddPanel.classList.remove("hidden");
+        singleProfilePanel.classList.add("hidden");
+
+        modeSubtitle.textContent = "請新增長輩編號";
+    }
+
+    openAddElder.addEventListener("click", showAddPanel);
+    backToSearch.addEventListener("click", showSearchPanel);
+    backToSingleSearch.addEventListener(
+        "click",
+        showSearchPanel
+    );
+
+    /* ==============================
+       新增長輩編號
+    ============================== */
+
+    async function addElder() {
+        const elderId = newElderInput.value.trim();
+
+        if (elderId === "") {
+            alert("請輸入長輩編號");
+            return;
+        }
+
+        if (!/^\d+$/.test(elderId)) {
+            alert("長輩編號只能使用數字");
+            return;
+        }
+
+        try {
+            const elderReference = ref(
+                database,
+                "players/" + elderId
+            );
+
+            const snapshot = await get(elderReference);
+
+            if (snapshot.exists()) {
+                alert("這個長輩編號已經存在");
+                return;
+            }
+
+            await set(elderReference, {
+                exists: true
+            });
+
+            if (!elderIds.includes(elderId)) {
+                elderIds.push(elderId);
+
+                elderIds.sort((a, b) =>
+                    a.localeCompare(
+                        b,
+                        undefined,
+                        {
+                            numeric: true,
+                            sensitivity: "base"
+                        }
                     )
-                    :
-                    "--:--";
-
-            if (page === "success")
-            {
-                const completed =
-                    Number(
-                        record.completedCalls ??
-                        0
-                    );
-
-                const failed =
-                    Number(
-                        record.failedCalls ??
-                        0
-                    );
-
-                const total =
-                    completed +
-                    failed;
-
-                const rate =
-                    total > 0
-                        ?
-                        completed /
-                        total *
-                        100
-                        :
-                        0;
-
-                return `
-                    <div class="record-detail">
-                        遊玩時間：${time}
-                        <br><br>
-                        成功：${completed} 次
-                        <br>
-                        失敗：${failed} 次
-                        <br>
-                        總數：${total} 次
-                        <br>
-                        成功率：${rate.toFixed(1)}%
-                    </div>
-                `;
-            }
-
-            if (page === "visual")
-            {
-                const times =
-                    normalizeNumberList(
-                        record.visualTimes
-                    );
-
-                let timesHtml =
-                    "";
-
-                times.forEach(
-                    function (
-                        item,
-                        index
-                    )
-                    {
-                        timesHtml +=
-                            `第${index + 1}通：
-                            ${Number(item).toFixed(2)}
-                            秒<br>`;
-                    }
                 );
-
-                if (times.length === 0)
-                {
-                    timesHtml =
-                        "無視覺反應紀錄<br>";
-                }
-
-                const average =
-                    Number(
-                        record.averageVisualTime ??
-                        0
-                    );
-
-                return `
-                    <div class="record-detail">
-                        遊玩時間：${time}
-                        <br><br>
-                        ${timesHtml}
-                        <strong>
-                            平均：
-                            ${average.toFixed(2)}
-                            秒
-                        </strong>
-                    </div>
-                `;
             }
 
-            if (page === "memory")
-            {
-                return `
-                    <div class="record-detail">
-                        遊玩時間：${time}
-                        <br><br>
-                        提示次數：
-                        ${record.hintCount ?? 0}
-                        次
-                    </div>
-                `;
+            renderElderCards();
+
+            newElderInput.value = "";
+
+            alert(`長輩編號 ${elderId} 新增成功`);
+
+            showSearchPanel();
+
+        } catch (error) {
+            console.error("新增長輩編號失敗：", error);
+            alert("新增失敗，請檢查 Firebase 連線或權限");
+        }
+    }
+
+    addElderButton.addEventListener("click", addElder);
+
+    newElderInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            addElder();
+        }
+    });
+
+    /* ==============================
+       查詢長輩編號
+    ============================== */
+
+    async function searchElder() {
+        const elderId = singleSearchInput.value.trim();
+
+        if (elderId === "") {
+            alert("請輸入長輩編號");
+            return;
+        }
+
+        if (!/^\d+$/.test(elderId)) {
+            alert("長輩編號只能使用數字");
+            return;
+        }
+
+        try {
+            const snapshot = await get(
+                ref(database, "players/" + elderId)
+            );
+
+            if (!snapshot.exists()) {
+                alert("查無此長輩編號");
+                return;
             }
 
-            if (page === "hearing")
-            {
-                const times =
-                    normalizeNumberList(
-                        record.hearingTimes
-                    );
+            currentProfileElderId = elderId;
+            showProfilePanel(elderId);
 
-                let timesHtml =
-                    "";
+        } catch (error) {
+            console.error("查詢長輩編號失敗：", error);
+            alert("查詢失敗，請稍後再試");
+        }
+    }
 
-                times.forEach(
-                    function (
-                        item,
-                        index
-                    )
-                    {
-                        timesHtml +=
-                            `第${index + 1}通：
-                            ${Number(item).toFixed(2)}
-                            秒<br>`;
-                    }
-                );
+    singleSearchButton.addEventListener(
+        "click",
+        searchElder
+    );
 
-                if (times.length === 0)
-                {
-                    timesHtml =
-                        "無聽力反應紀錄<br>";
-                }
-
-                const average =
-                    Number(
-                        record.averageHearingTime ??
-                        0
-                    );
-
-                return `
-                    <div class="record-detail">
-                        遊玩時間：${time}
-                        <br><br>
-                        ${timesHtml}
-                        <strong>
-                            平均：
-                            ${average.toFixed(2)}
-                            秒
-                        </strong>
-                    </div>
-                `;
+    singleSearchInput.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Enter") {
+                searchElder();
             }
+        }
+    );
 
-            if (page === "focus")
-            {
-                const focus =
-                    record.focusPercentage ||
-                    {};
+    /* ==============================
+       單人模式：個人資料頁
+    ============================== */
 
-                return `
-                    <div class="record-detail">
-                        遊玩時間：${time}
-                        <br><br>
-                        1組線：
-                        ${Number(
-                            focus.oneLine ?? 0
-                        ).toFixed(1)}%
-                        <br>
-                        2組線：
-                        ${Number(
-                            focus.twoLines ?? 0
-                        ).toFixed(1)}%
-                        <br>
-                        3組線：
-                        ${Number(
-                            focus.threeLines ?? 0
-                        ).toFixed(1)}%
+    function showProfilePanel(elderId) {
+        singleSearchPanel.classList.add("hidden");
+        singleAddPanel.classList.add("hidden");
+        singleProfilePanel.classList.remove("hidden");
+
+        modeSubtitle.textContent = "編號 " + elderId;
+
+        currentProfilePage = "success";
+
+        profileCategoryButtons.forEach(function (button) {
+            button.classList.toggle(
+                "active",
+                button.dataset.profilePage === "success"
+            );
+        });
+
+        profilePageDescription.textContent =
+            descriptions.success;
+
+        updateProfileContent();
+    }
+
+    /* ==============================
+       新增：單局總成功率環形圖
+    ============================== */
+
+    function createSuccessChartHtml(record) {
+        const data = getSuccessData(record);
+        const time = getRecordTime(record);
+
+        // CSS conic-gradient 環形圖
+        // 成功部分使用深紫灰色
+        // 失敗部分使用淺紫灰色
+        const rate = data.rate;
+
+        const chartBackground = data.total > 0
+            ? `conic-gradient(
+                #686F98 0% ${rate}%,
+                #C9CBD9 ${rate}% 100%
+              )`
+            : "#C9CBD9";
+
+        return `
+            <div class="record-detail">
+
+                <div class="success-record-time">
+                    遊玩時間：${time}
+                </div>
+
+                <div class="success-chart-layout">
+
+                    <div
+                        class="success-donut"
+                        style="background: ${chartBackground};"
+                        role="img"
+                        aria-label="成功率 ${rate.toFixed(1)}%"
+                    >
+                        <div class="success-donut-center">
+
+                            <div class="success-donut-rate">
+                                ${rate.toFixed(1)}%
+                            </div>
+
+                            <div class="success-donut-label">
+                                成功率
+                            </div>
+
+                        </div>
                     </div>
-                `;
-            }
 
-            const completed =
-                Number(
-                    record.completedCalls ??
-                    0
-                );
+                    <div class="success-stat-list">
 
-            const failed =
-                Number(
-                    record.failedCalls ??
-                    0
-                );
+                        <div class="success-stat">
+                            <span
+                                class="success-stat-dot success-dot-completed"
+                            ></span>
 
-            const total =
-                completed +
-                failed;
+                            <span>成功次數</span>
 
-            const rate =
-                total > 0
-                    ?
-                    completed /
-                    total *
-                    100
-                    :
-                    0;
+                            <strong>
+                                ${data.completed} 次
+                            </strong>
+                        </div>
+
+                        <div class="success-stat">
+                            <span
+                                class="success-stat-dot success-dot-failed"
+                            ></span>
+
+                            <span>失敗次數</span>
+
+                            <strong>
+                                ${data.failed} 次
+                            </strong>
+                        </div>
+
+                        <div class="success-stat success-stat-total">
+                            <span>總次數</span>
+
+                            <strong>
+                                ${data.total} 次
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+    }
+
+    /* ==============================
+       單人模式：其他頁籤文字
+    ============================== */
+
+    function createProfileRecordHtml(record, page) {
+        const time = getRecordTime(record);
+
+        // 只有總成功率改成圖表
+        if (page === "success") {
+            return createSuccessChartHtml(record);
+        }
+
+        if (page === "visual") {
+            return `
+                <div class="record-detail">
+                    遊玩時間：${time}
+                    <br><br>
+                    ${formatTimeList(record.visualTimes)}
+                    <strong>
+                        平均：
+                        ${safeNumber(record.averageVisualTime).toFixed(2)}
+                        秒
+                    </strong>
+                </div>
+            `;
+        }
+
+        if (page === "memory") {
+            return `
+                <div class="record-detail">
+                    遊玩時間：${time}
+                    <br><br>
+                    提示次數：
+                    ${safeCount(record.hintCount)} 次
+                </div>
+            `;
+        }
+
+        if (page === "hearing") {
+            return `
+                <div class="record-detail">
+                    遊玩時間：${time}
+                    <br><br>
+                    ${formatTimeList(record.hearingTimes)}
+                    <strong>
+                        平均：
+                        ${safeNumber(record.averageHearingTime).toFixed(2)}
+                        秒
+                    </strong>
+                </div>
+            `;
+        }
+
+        if (page === "focus") {
+            const focus = record.focusPercentage || {};
 
             return `
                 <div class="record-detail">
                     遊玩時間：${time}
                     <br><br>
-                    成功率：${rate.toFixed(1)}%
+                    1組線：
+                    ${safeNumber(focus.oneLine).toFixed(1)}%
                     <br>
-                    平均視覺反應：
-                    ${Number(
-                        record.averageVisualTime ??
-                        0
-                    ).toFixed(2)}
-                    秒
+                    2組線：
+                    ${safeNumber(focus.twoLines).toFixed(1)}%
                     <br>
-                    提示次數：
-                    ${record.hintCount ?? 0}
-                    次
-                    <br>
-                    平均聽力反應：
-                    ${Number(
-                        record.averageHearingTime ??
-                        0
-                    ).toFixed(2)}
-                    秒
+                    3組線：
+                    ${safeNumber(focus.threeLines).toFixed(1)}%
                 </div>
             `;
         }
 
+        // 總分析：暫時保留原本的每局摘要
+        const data = getSuccessData(record);
 
-        /* 更新全體 */
+        return `
+            <div class="record-detail">
+                遊玩時間：${time}
+                <br><br>
+                成功率：${data.rate.toFixed(1)}%
+                <br>
+                平均視覺反應：
+                ${safeNumber(record.averageVisualTime).toFixed(2)} 秒
+                <br>
+                提示次數：
+                ${safeCount(record.hintCount)} 次
+                <br>
+                平均聽力反應：
+                ${safeNumber(record.averageHearingTime).toFixed(2)} 秒
+            </div>
+        `;
+    }
 
-        async function updateAllElderCards()
-        {
-            for (
-                const elderId
-                of elderIds
-            )
-            {
-                const dataElement =
-                    document.getElementById(
-                        "elderData_" +
-                        elderId
-                    );
+    /* ==============================
+       更新單人模式資料
+    ============================== */
 
-                if (!dataElement)
-                {
-                    continue;
-                }
-
-                dataElement.innerHTML =
-                    "資料讀取中...";
-
-                const records =
-                    await loadElderDailyRecords(
-                        elderId
-                    );
-
-                if (records.length === 0)
-                {
-                    dataElement.innerHTML =
-                        "當日無遊玩紀錄";
-
-                    continue;
-                }
-
-                const latest =
-                    records[
-                        records.length - 1
-                    ];
-
-                dataElement.innerHTML =
-                    createLatestRecordHtml(
-                        latest,
-                        currentGroupPage
-                    );
-            }
+    async function updateProfileContent() {
+        if (!currentProfileElderId) {
+            return;
         }
 
+        const version = ++profileRequestVersion;
+        const elderId = currentProfileElderId;
+        const dateString = getSelectedDateString();
+        const page = currentProfilePage;
 
-        /* 日期 */
+        profileContent.textContent = "資料讀取中...";
 
-        function updateDateDisplay()
-        {
-            const year =
-                selectedDate.getFullYear();
+        const records = await loadElderDailyRecords(
+            elderId,
+            dateString
+        );
 
-            const month =
-                selectedDate.getMonth() +
-                1;
-
-            const day =
-                selectedDate.getDate();
-
-            currentYearText.textContent =
-                year;
-
-            currentDateText.textContent =
-                month +
-                "/" +
-                day;
-
-            if (
-                selectedDate.getTime()
-                >=
-                today.getTime()
-            )
-            {
-                nextDateButton.disabled =
-                    true;
-
-                nextDateButton.style.opacity =
-                    "0.3";
-
-                nextDateButton.style.cursor =
-                    "default";
-            }
-            else
-            {
-                nextDateButton.disabled =
-                    false;
-
-                nextDateButton.style.opacity =
-                    "1";
-
-                nextDateButton.style.cursor =
-                    "pointer";
-            }
-
-            if (
-                !groupModeContent
-                    .classList
-                    .contains(
-                        "hidden"
-                    )
-            )
-            {
-                updateAllElderCards();
-            }
-
-            if (
-                !singleProfilePanel
-                    .classList
-                    .contains(
-                        "hidden"
-                    )
-            )
-            {
-                updateProfileContent();
-            }
+        // 使用者已切換日期、頁籤或編號時
+        // 不讓舊的讀取結果覆蓋新畫面
+        if (
+            version !== profileRequestVersion ||
+            singleProfilePanel.classList.contains("hidden")
+        ) {
+            return;
         }
 
-
-        previousDateButton.addEventListener(
-            "click",
-            function ()
-            {
-                selectedDate.setDate(
-                    selectedDate.getDate() -
-                    1
-                );
-
-                updateDateDisplay();
-            }
-        );
-
-
-        nextDateButton.addEventListener(
-            "click",
-            function ()
-            {
-                const next =
-                    new Date(
-                        selectedDate
-                    );
-
-                next.setDate(
-                    next.getDate() +
-                    1
-                );
-
-                if (
-                    next.getTime()
-                    >
-                    today.getTime()
-                )
-                {
-                    return;
-                }
-
-                selectedDate =
-                    next;
-
-                updateDateDisplay();
-            }
-        );
-
-
-        /* 全體頁籤 */
-
-        categoryButtons.forEach(
-            function (button)
-            {
-                button.addEventListener(
-                    "click",
-                    function ()
-                    {
-                        categoryButtons.forEach(
-                            function (item)
-                            {
-                                item.classList.remove(
-                                    "active"
-                                );
-                            }
-                        );
-
-                        button.classList.add(
-                            "active"
-                        );
-
-                        currentGroupPage =
-                            button.dataset.page;
-
-                        pageDescription.textContent =
-                            descriptions[
-                                currentGroupPage
-                            ];
-
-                        updateAllElderCards();
-                    }
-                );
-            }
-        );
-
-
-        /* 全體搜尋 */
-
-        groupSearchInput.addEventListener(
-            "input",
-            function ()
-            {
-                const keyword =
-                    groupSearchInput
-                        .value
-                        .trim();
-
-                const cards =
-                    peopleGrid.querySelectorAll(
-                        ".person-card"
-                    );
-
-                cards.forEach(
-                    function (card)
-                    {
-                        const id =
-                            card.dataset.elderId;
-
-                        if (
-                            keyword ===
-                            "" ||
-                            id.includes(
-                                keyword
-                            )
-                        )
-                        {
-                            card.style.display =
-                                "";
-                        }
-                        else
-                        {
-                            card.style.display =
-                                "none";
-                        }
-                    }
-                );
-            }
-        );
-
-
-        /* 模式 */
-
-        modeButton.addEventListener(
-            "click",
-            function ()
-            {
-                modeDropdown.classList.toggle(
-                    "show"
-                );
-            }
-        );
-
-
-        modeOptions.forEach(
-            function (option)
-            {
-                option.addEventListener(
-                    "click",
-                    function ()
-                    {
-                        const mode =
-                            option.dataset.mode;
-
-                        if (mode === "group")
-                        {
-                            document.body.classList.remove(
-                                "single-mode-active"
-                            );
-
-                            modeButtonText.textContent =
-                                "全體模式";
-
-                            modeSubtitle.textContent =
-                                "當日遊玩數";
-
-                            groupModeContent.classList.remove(
-                                "hidden"
-                            );
-
-                            singleModeContent.classList.add(
-                                "hidden"
-                            );
-
-                            updateAllElderCards();
-                        }
-                        else
-                        {
-                            document.body.classList.add(
-                                "single-mode-active"
-                            );
-
-                            modeButtonText.textContent =
-                                "單人模式";
-
-                            groupModeContent.classList.add(
-                                "hidden"
-                            );
-
-                            singleModeContent.classList.remove(
-                                "hidden"
-                            );
-
-                            showSearchPanel();
-                        }
-
-                        modeDropdown.classList.remove(
-                            "show"
-                        );
-                    }
-                );
-            }
-        );
-
-
-        document.addEventListener(
-            "click",
-            function (event)
-            {
-                if (
-                    !event.target.closest(
-                        ".mode-select"
-                    )
-                )
-                {
-                    modeDropdown.classList.remove(
-                        "show"
-                    );
-                }
-            }
-        );
-
-
-        /* 查詢頁 */
-
-        function showSearchPanel()
-        {
-            singleSearchPanel.classList.remove(
-                "hidden"
-            );
-
-            singleAddPanel.classList.add(
-                "hidden"
-            );
-
-            singleProfilePanel.classList.add(
-                "hidden"
-            );
-
-            modeSubtitle.textContent =
-                "請查詢長輩編號";
+        if (records.length === 0) {
+            profileContent.textContent = "當日無遊玩紀錄";
+            return;
         }
 
+        /*
+           records 已依時間由舊到新排列。
+           反轉顯示順序，讓最新一局在最上面。
+           但局數仍依當天實際遊玩順序編號。
+        */
 
-        function showAddPanel()
-        {
-            singleSearchPanel.classList.add(
-                "hidden"
+        const numberedRecords = records.map(
+            (record, index) => ({
+                record,
+                sessionNumber: index + 1
+            })
+        );
+
+        numberedRecords.reverse();
+
+        const html = numberedRecords.map(function (item) {
+            return `
+                <div class="profile-session-record">
+
+                    <div class="profile-session-title">
+                        第 ${item.sessionNumber} 局
+                    </div>
+
+                    ${createProfileRecordHtml(
+                        item.record,
+                        page
+                    )}
+
+                </div>
+            `;
+        }).join("");
+
+        profileContent.innerHTML = html;
+    }
+
+    /* ==============================
+       單人模式頁籤
+    ============================== */
+
+    profileCategoryButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+
+            profileCategoryButtons.forEach(item =>
+                item.classList.remove("active")
             );
 
-            singleAddPanel.classList.remove(
-                "hidden"
-            );
+            button.classList.add("active");
 
-            singleProfilePanel.classList.add(
-                "hidden"
-            );
+            currentProfilePage =
+                button.dataset.profilePage;
 
-            modeSubtitle.textContent =
-                "請新增長輩編號";
+            profilePageDescription.textContent =
+                descriptions[currentProfilePage];
+
+            updateProfileContent();
+        });
+    });
+
+    /* ==============================
+       刪除長輩編號
+    ============================== */
+
+    deleteElderButton.addEventListener("click", function () {
+        if (!currentProfileElderId) {
+            return;
         }
 
+        deleteModalText.textContent =
+            "是否確認刪除 " + currentProfileElderId;
 
-        openAddElder.addEventListener(
-            "click",
-            showAddPanel
-        );
+        deleteModal.classList.remove("hidden");
+    });
 
-        backToSearch.addEventListener(
-            "click",
-            showSearchPanel
-        );
+    cancelDeleteButton.addEventListener("click", function () {
+        deleteModal.classList.add("hidden");
+    });
 
-        backToSingleSearch.addEventListener(
-            "click",
-            showSearchPanel
-        );
+    confirmDeleteButton.addEventListener(
+        "click",
+        async function () {
 
-
-        /* 新增 */
-
-        async function addElder()
-        {
-            const elderId =
-                newElderInput
-                    .value
-                    .trim();
-
-            if (elderId === "")
-            {
-                alert(
-                    "請輸入長輩編號"
-                );
-
+            if (!currentProfileElderId) {
                 return;
             }
 
-            if (
-                !/^\d+$/.test(
-                    elderId
-                )
-            )
-            {
-                alert(
-                    "長輩編號只能使用數字"
-                );
+            const elderIdToDelete = currentProfileElderId;
 
-                return;
-            }
+            // 防止連續點擊
+            confirmDeleteButton.disabled = true;
 
-            try
-            {
-                const elderReference =
+            try {
+                await remove(
                     ref(
                         database,
-                        "players/" +
-                        elderId
-                    );
-
-                const snapshot =
-                    await get(
-                        elderReference
-                    );
-
-                if (snapshot.exists())
-                {
-                    alert(
-                        "這個長輩編號已經存在"
-                    );
-
-                    return;
-                }
-
-                await set(
-                    elderReference,
-                    {
-                        exists: true
-                    }
+                        "players/" + elderIdToDelete
+                    )
                 );
 
-                if (
-                    !elderIds.includes(
-                        elderId
-                    )
-                )
-                {
-                    elderIds.push(
-                        elderId
-                    );
+                elderIds = elderIds.filter(
+                    elderId => elderId !== elderIdToDelete
+                );
 
-                    elderIds.sort(
-                        function (a, b)
-                        {
-                            return a.localeCompare(
-                                b,
-                                undefined,
-                                {
-                                    numeric: true,
-                                    sensitivity: "base"
-                                }
-                            );
-                        }
-                    );
-                }
+                groupRequestVersion++;
+                profileRequestVersion++;
 
                 renderElderCards();
 
-                newElderInput.value =
-                    "";
+                deleteModal.classList.add("hidden");
 
-                alert(
-                    "長輩編號 " +
-                    elderId +
-                    " 新增成功"
-                );
+                currentProfileElderId = null;
+                singleSearchInput.value = "";
 
                 showSearchPanel();
-            }
-            catch (error)
-            {
-                console.error(
-                    "新增長輩編號失敗：",
-                    error
-                );
 
-                alert(
-                    "新增失敗，請檢查 Firebase 連線或權限"
-                );
+            } catch (error) {
+                console.error("刪除長輩編號失敗：", error);
+                alert("刪除失敗，請稍後再試");
+
+            } finally {
+                confirmDeleteButton.disabled = false;
             }
         }
+    );
 
-
-        addElderButton.addEventListener(
-            "click",
-            addElder
-        );
-
-
-        newElderInput.addEventListener(
-            "keydown",
-            function (event)
-            {
-                if (event.key === "Enter")
-                {
-                    addElder();
-                }
-            }
-        );
-
-
-        /* 查詢 */
-
-        async function searchElder()
-        {
-            const elderId =
-                singleSearchInput
-                    .value
-                    .trim();
-
-            if (elderId === "")
-            {
-                alert(
-                    "請輸入長輩編號"
-                );
-
-                return;
-            }
-
-            try
-            {
-                const elderReference =
-                    ref(
-                        database,
-                        "players/" +
-                        elderId
-                    );
-
-                const snapshot =
-                    await get(
-                        elderReference
-                    );
-
-                if (!snapshot.exists())
-                {
-                    alert(
-                        "查無此長輩編號"
-                    );
-
-                    return;
-                }
-
-                currentProfileElderId =
-                    elderId;
-
-                showProfilePanel(
-                    elderId
-                );
-            }
-            catch (error)
-            {
-                console.error(
-                    "查詢長輩編號失敗：",
-                    error
-                );
-
-                alert(
-                    "查詢失敗，請稍後再試"
-                );
-            }
+    deleteModal.addEventListener("click", function (event) {
+        if (event.target === deleteModal) {
+            deleteModal.classList.add("hidden");
         }
+    });
 
+    /* ==============================
+       第一次載入
+    ============================== */
 
-        singleSearchButton.addEventListener(
-            "click",
-            searchElder
+    async function initializeDashboard() {
+        document.body.classList.remove(
+            "single-mode-active"
         );
 
+        await loadElderIdsFromFirebase();
 
-        singleSearchInput.addEventListener(
-            "keydown",
-            function (event)
-            {
-                if (event.key === "Enter")
-                {
-                    searchElder();
-                }
-            }
-        );
+        renderElderCards();
+        updateDateDisplay();
 
-
-        /* 個人頁 */
-
-        function showProfilePanel(
-            elderId
-        )
-        {
-            singleSearchPanel.classList.add(
-                "hidden"
-            );
-
-            singleAddPanel.classList.add(
-                "hidden"
-            );
-
-            singleProfilePanel.classList.remove(
-                "hidden"
-            );
-
-            modeSubtitle.textContent =
-                "編號 " +
-                elderId;
-
-            currentProfilePage =
-                "success";
-
-            profileCategoryButtons.forEach(
-                function (button)
-                {
-                    button.classList.remove(
-                        "active"
-                    );
-
-                    if (
-                        button.dataset.profilePage
-                        ===
-                        "success"
-                    )
-                    {
-                        button.classList.add(
-                            "active"
-                        );
-                    }
-                }
-            );
-
-            profilePageDescription.textContent =
-                descriptions.success;
-
-            updateProfileContent();
-        }
-
-
-        async function updateProfileContent()
-        {
-            if (!currentProfileElderId)
-            {
-                return;
-            }
-
-            profileContent.innerHTML =
-                "資料讀取中...";
-
-            const records =
-                await loadElderDailyRecords(
-                    currentProfileElderId
-                );
-
-            if (records.length === 0)
-            {
-                profileContent.innerHTML =
-                    "當日無遊玩紀錄";
-
-                return;
-            }
-
-            let html =
-                "";
-
-            records.forEach(
-                function (
-                    record,
-                    index
-                )
-                {
-                    html += `
-                        <div class="profile-session-record">
-
-                            <div class="profile-session-title">
-                                第 ${index + 1} 局
-                            </div>
-
-                            ${createProfileRecordHtml(
-                                record,
-                                currentProfilePage
-                            )}
-
-                        </div>
-                    `;
-                }
-            );
-
-            profileContent.innerHTML =
-                html;
-        }
-
-
-        /* 個人頁籤 */
-
-        profileCategoryButtons.forEach(
-            function (button)
-            {
-                button.addEventListener(
-                    "click",
-                    function ()
-                    {
-                        profileCategoryButtons.forEach(
-                            function (item)
-                            {
-                                item.classList.remove(
-                                    "active"
-                                );
-                            }
-                        );
-
-                        button.classList.add(
-                            "active"
-                        );
-
-                        currentProfilePage =
-                            button.dataset
-                                .profilePage;
-
-                        profilePageDescription.textContent =
-                            descriptions[
-                                currentProfilePage
-                            ];
-
-                        updateProfileContent();
-                    }
-                );
-            }
-        );
-
-
-        /* 開啟刪除 */
-
-        deleteElderButton.addEventListener(
-            "click",
-            function ()
-            {
-                if (!currentProfileElderId)
-                {
-                    return;
-                }
-
-                deleteModalText.textContent =
-                    "是否確認刪除 " +
-                    currentProfileElderId;
-
-                deleteModal.classList.remove(
-                    "hidden"
-                );
-            }
-        );
-
-
-        /* 取消刪除 */
-
-        cancelDeleteButton.addEventListener(
-            "click",
-            function ()
-            {
-                deleteModal.classList.add(
-                    "hidden"
-                );
-            }
-        );
-
-
-        /* 確認刪除 */
-
-        confirmDeleteButton.addEventListener(
-            "click",
-            async function ()
-            {
-                if (!currentProfileElderId)
-                {
-                    return;
-                }
-
-                const elderIdToDelete =
-                    currentProfileElderId;
-
-                try
-                {
-                    await remove(
-                        ref(
-                            database,
-                            "players/" +
-                            elderIdToDelete
-                        )
-                    );
-
-                    elderIds =
-                        elderIds.filter(
-                            function (elderId)
-                            {
-                                return elderId !==
-                                       elderIdToDelete;
-                            }
-                        );
-
-                    renderElderCards();
-
-                    deleteModal.classList.add(
-                        "hidden"
-                    );
-
-                    currentProfileElderId =
-                        null;
-
-                    singleSearchInput.value =
-                        "";
-
-                    showSearchPanel();
-                }
-                catch (error)
-                {
-                    console.error(
-                        "刪除長輩編號失敗：",
-                        error
-                    );
-
-                    alert(
-                        "刪除失敗，請稍後再試"
-                    );
-                }
-            }
-        );
-
-
-        deleteModal.addEventListener(
-            "click",
-            function (event)
-            {
-                if (
-                    event.target ===
-                    deleteModal
-                )
-                {
-                    deleteModal.classList.add(
-                        "hidden"
-                    );
-                }
-            }
-        );
-
-
-        /* 第一次開啟 */
-
-        async function initializeDashboard()
-        {
-            document.body.classList.remove(
-                "single-mode-active"
-            );
-
-            await loadElderIdsFromFirebase();
-
-            renderElderCards();
-
-            updateDateDisplay();
-
-            console.log(
-                "Transfer Dashboard 載入完成"
-            );
-        }
-
-
-        initializeDashboard();
+        console.log("Transfer Dashboard 載入完成");
     }
-);
+
+    initializeDashboard();
+
+});

@@ -1,9 +1,13 @@
+
+/* ==============================
+   基本設定
+============================== */
+
 * {
     box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
     margin: 0;
     padding: 0;
 }
@@ -12,43 +16,28 @@ body {
     min-height: 100vh;
     background-color: #f3f1e9;
     color: #70651f;
-
-    font-family:
-        "Microsoft JhengHei",
-        "Noto Sans TC",
-        sans-serif;
-
+    font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
     font-weight: 700;
 }
-
-
-/* 共用 */
 
 .hidden {
     display: none !important;
 }
 
-
-/* Header */
+/* ==============================
+   Header
+============================== */
 
 .top-header {
     width: 100%;
     height: 140px;
-
     background-color: #b2b193;
-
     display: flex;
     align-items: center;
-
     padding: 20px 48px;
-
     position: relative;
-
     z-index: 10;
 }
-
-
-/* 日期 */
 
 .date-area {
     display: flex;
@@ -59,27 +48,19 @@ body {
 .date-arrow {
     border: none;
     background: transparent;
-
     color: #70651f;
-
     font-size: 32px;
-
     cursor: pointer;
-
     padding: 0;
 }
 
 .date-card {
     width: 132px;
     height: 92px;
-
     background-color: #f3f1e9;
-
     border-radius: 10px;
-
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
 }
@@ -95,8 +76,7 @@ body {
     line-height: 1;
 }
 
-
-/* 模式 */
+/* 模式切換 */
 
 .mode-area {
     margin-left: 35px;
@@ -110,25 +90,17 @@ body {
 
 .mode-button {
     height: 56px;
-
     border: none;
     border-radius: 7px;
-
     background-color: #f3f1e9;
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 30px;
     font-weight: 700;
-
     padding: 5px 14px;
-
     cursor: pointer;
-
     display: flex;
     align-items: center;
-
     gap: 15px;
 }
 
@@ -138,33 +110,20 @@ body {
 
 .mode-subtitle {
     margin-top: 9px;
-
     font-size: 20px;
-
     letter-spacing: 1px;
 }
 
-
-/* 模式下拉 */
-
 .mode-dropdown {
     position: absolute;
-
     left: 0;
     top: calc(100% + 6px);
-
     min-width: 175px;
-
     background-color: #f3f1e9;
-
     border: 4px solid #b2b193;
-
     border-radius: 9px;
-
     overflow: hidden;
-
     display: none;
-
     z-index: 100;
 }
 
@@ -174,22 +133,14 @@ body {
 
 .mode-dropdown button {
     width: 100%;
-
     border: none;
-
     background-color: #f3f1e9;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 21px;
     font-weight: 700;
-
     padding: 12px 14px;
-
     text-align: left;
-
     cursor: pointer;
 }
 
@@ -197,123 +148,81 @@ body {
     background-color: #dedccb;
 }
 
-
-/* 選單 */
-
 .menu-button {
     position: absolute;
-
     right: 22px;
     top: 25px;
-
     border: none;
-
     background: transparent;
-
     color: #70651f;
-
     font-size: 38px;
-
     line-height: 1;
-
     cursor: pointer;
 }
 
-
-/* 主內容 */
+/* ==============================
+   全體模式
+============================== */
 
 .main-content {
     width: 100%;
-
     padding: 20px 48px 70px;
 }
 
-
-/* 導覽 */
-
 .navigation-row {
     width: 100%;
-
     display: flex;
-
     align-items: center;
     justify-content: space-between;
-
     gap: 30px;
 }
 
 .category-nav {
     display: flex;
-
     align-items: center;
-
     gap: 20px;
 }
 
 .category-button,
 .profile-category-button {
     border: none;
-
     background: transparent;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 18px;
     font-weight: 700;
-
     white-space: nowrap;
-
     padding: 6px 9px;
-
     cursor: pointer;
-
     border-radius: 9px;
 }
 
 .category-button.active,
 .profile-category-button.active {
     border: 5px solid #b2b193;
-
     padding: 3px 7px;
-
     background-color: #f3f1e9;
 }
-
-
-/* 搜尋 */
 
 .search-box {
     width: 220px;
     height: 40px;
-
     flex-shrink: 0;
-
     border-radius: 10px;
-
     background-color: #b2b193;
-
     display: flex;
     align-items: center;
-
     padding: 0 12px;
 }
 
 .search-box input {
     width: 100%;
-
     border: none;
     outline: none;
-
     background: transparent;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-weight: 700;
-
     font-size: 14px;
 }
 
@@ -324,76 +233,47 @@ body {
 
 .search-icon {
     margin-left: 8px;
-
     font-size: 27px;
-
     line-height: 1;
 }
 
-
-/* 說明 */
-
 .page-description {
     margin-top: 8px;
-
     color: #70651f;
-
     font-size: 15px;
-
     font-weight: 700;
-
     letter-spacing: 1px;
 }
 
-
-/* 長輩卡片 */
-
 .people-grid {
     width: 100%;
-
     margin-top: 14px;
-
     display: grid;
-
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 15px;
 }
 
 .person-card {
     height: 220px;
-
     border: 9px solid #b2b193;
-
     border-radius: 13px;
-
     background-color: #f3f1e9;
-
     padding: 8px 12px;
-
     overflow: auto;
 }
 
 .person-card h2 {
     margin: 0;
-
     color: #70651f;
-
     font-size: 20px;
-
     font-weight: 700;
 }
 
 .person-data {
     margin-top: 18px;
-
     color: #70651f;
-
     font-size: 15px;
-
     font-weight: 700;
-
     line-height: 1.7;
 }
 
@@ -401,66 +281,49 @@ body {
     line-height: 1.7;
 }
 
-
-/* 單人模式 */
+/* ==============================
+   單人模式
+============================== */
 
 .single-content {
     width: 100%;
-
     min-height: 570px;
-
     padding: 0 48px 70px;
 }
 
 .single-panel {
     width: 100%;
-
     padding-top: 105px;
-
     display: flex;
     flex-direction: column;
-
     align-items: center;
 }
 
 .single-panel h1 {
     margin: 0 0 42px;
-
     color: #70651f;
-
     font-size: 42px;
-
     font-weight: 700;
 }
 
 .single-search-box {
     width: 385px;
     height: 50px;
-
     background-color: #b2b193;
-
     border-radius: 18px;
-
     display: flex;
     align-items: center;
-
     padding: 0 16px;
 }
 
 .single-search-box input {
     flex: 1;
-
     min-width: 0;
-
     border: none;
     outline: none;
-
     background: transparent;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 20px;
     font-weight: 700;
 }
@@ -473,80 +336,54 @@ body {
 .single-search-box button {
     width: 46px;
     height: 46px;
-
     flex-shrink: 0;
-
     border: none;
-
     background: transparent;
-
     color: #70651f;
-
     font-size: 32px;
-
     cursor: pointer;
 }
 
 .single-text-button {
     margin-top: 22px;
-
     border: none;
-
     background: transparent;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 22px;
     font-weight: 700;
-
     cursor: pointer;
 }
 
-
-/* 個人頁 */
+/* 個人資料頁 */
 
 .single-profile {
     width: 100%;
-
     padding-top: 25px;
 }
 
 .profile-top-row {
     width: 100%;
-
     display: flex;
-
     justify-content: flex-end;
-
     margin-bottom: -10px;
 }
 
 .profile-action-buttons {
     display: flex;
-
     align-items: center;
-
     gap: 12px;
 }
 
 .back-search-button {
     border: none;
-
     border-radius: 10px;
-
     padding: 12px 20px;
-
     background-color: #b2b193;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 16px;
     font-weight: 700;
-
     cursor: pointer;
 }
 
@@ -554,94 +391,63 @@ body {
     opacity: 0.85;
 }
 
-
-/* 個人資料 */
-
 .profile-data-area {
     width: 100%;
-
     margin-top: 18px;
-
     min-height: 0;
-
     border: none;
-
     border-radius: 0;
-
     background: transparent;
-
     padding: 0;
 }
 
 .profile-content {
     width: 100%;
-
     color: #70651f;
-
     font-size: 18px;
-
     font-weight: 700;
-
     line-height: 1.7;
-
     display: flex;
     flex-direction: column;
-
     gap: 22px;
 }
 
 .profile-session-record {
     width: 100%;
-
     border: 9px solid #b2b193;
-
     border-radius: 13px;
-
     background-color: #f3f1e9;
-
     padding: 25px 30px;
-
     min-height: 300px;
 }
 
 .profile-session-title {
-    margin: 0 0 5px 0;
-
+    margin: 0 0 5px;
     color: #70651f;
-
     font-size: 20px;
-
     font-weight: 700;
 }
 
 .profile-session-record .record-detail {
     color: #70651f;
-
     font-size: 18px;
-
     font-weight: 700;
-
     line-height: 1.7;
 }
 
-
-/* 刪除視窗 */
+/* ==============================
+   刪除確認視窗
+============================== */
 
 .delete-modal-overlay {
     position: fixed;
-
     inset: 0;
-
     width: 100vw;
     height: 100vh;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     background-color: rgba(243, 241, 233, 0.82);
-
     z-index: 99999;
 }
 
@@ -651,59 +457,41 @@ body {
 
 .delete-modal {
     width: 390px;
-
     min-height: 215px;
-
     background-color: #b2b193;
-
     border-radius: 8px;
-
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
-
     padding: 35px 35px 30px;
 }
 
 .delete-modal-text {
     color: #70651f;
-
     font-size: 25px;
     font-weight: 700;
-
     text-align: center;
-
     margin-bottom: 45px;
 }
 
 .delete-modal-buttons {
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 34px;
 }
 
 .delete-modal-button {
     width: 122px;
     height: 44px;
-
     border: none;
-
     border-radius: 9px;
-
     background-color: #f3f1e9;
-
     color: #70651f;
-
     font-family: inherit;
-
     font-size: 22px;
     font-weight: 700;
-
     cursor: pointer;
 }
 
@@ -711,8 +499,9 @@ body {
     opacity: 0.85;
 }
 
-
-/* 單人模式配色 */
+/* ==============================
+   單人模式專屬配色
+============================== */
 
 body.single-mode-active {
     background-color: #E7E8EF;
@@ -777,14 +566,8 @@ body.single-mode-active .single-search-box {
     background-color: #878DA9;
 }
 
-body.single-mode-active .single-search-box input {
-    color: #525161;
-}
-
-body.single-mode-active .single-search-box input::placeholder {
-    color: #525161;
-}
-
+body.single-mode-active .single-search-box input,
+body.single-mode-active .single-search-box input::placeholder,
 body.single-mode-active .single-search-box button {
     color: #525161;
 }
@@ -820,10 +603,7 @@ body.single-mode-active .profile-session-record {
     background-color: #E7E8EF;
 }
 
-body.single-mode-active .profile-session-title {
-    color: #525161;
-}
-
+body.single-mode-active .profile-session-title,
 body.single-mode-active .profile-session-record .record-detail {
     color: #525161;
 }
@@ -845,11 +625,101 @@ body.single-mode-active .delete-modal-button {
     color: #525161;
 }
 
+/* ==============================
+   新增：總成功率環形圖
+============================== */
 
-/* 小螢幕 */
+.success-record-time {
+    font-size: 17px;
+    margin-bottom: 18px;
+}
+
+.success-chart-layout {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: clamp(25px, 7vw, 100px);
+    padding: 8px 12px 14px;
+}
+
+.success-donut {
+    width: 220px;
+    height: 220px;
+    flex: 0 0 220px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+}
+
+.success-donut-center {
+    width: 158px;
+    height: 158px;
+    border-radius: 50%;
+    background: #E7E8EF;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #525161;
+}
+
+.success-donut-rate {
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.success-donut-label {
+    font-size: 17px;
+}
+
+.success-stat-list {
+    width: min(100%, 340px);
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.success-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 19px;
+    color: #525161;
+}
+
+.success-stat strong {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.success-stat-dot {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+    border-radius: 4px;
+}
+
+.success-dot-completed {
+    background-color: #686F98;
+}
+
+.success-dot-failed {
+    background-color: #C9CBD9;
+}
+
+.success-stat-total {
+    border-top: 2px solid #C9CBD9;
+    padding-top: 15px;
+    padding-left: 27px;
+}
+
+/* ==============================
+   響應式
+============================== */
 
 @media (max-width: 1000px) {
-
     .top-header {
         padding-left: 25px;
         padding-right: 25px;
@@ -871,19 +741,23 @@ body.single-mode-active .delete-modal-button {
     }
 }
 
-
 @media (max-width: 720px) {
-
     .top-header {
         height: auto;
-
         flex-wrap: wrap;
-
         gap: 15px;
     }
 
     .mode-area {
         margin-left: 0;
+    }
+
+    .navigation-row {
+        flex-wrap: wrap;
+    }
+
+    .category-nav {
+        flex-wrap: wrap;
     }
 
     .people-grid {
@@ -900,7 +774,27 @@ body.single-mode-active .delete-modal-button {
 
     .profile-session-record {
         padding: 20px;
-
         min-height: 250px;
+    }
+
+    .success-chart-layout {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .success-donut {
+        width: 190px;
+        height: 190px;
+        flex-basis: 190px;
+    }
+
+    .success-donut-center {
+        width: 137px;
+        height: 137px;
+    }
+
+    .success-donut-rate {
+        font-size: 32px;
     }
 }
