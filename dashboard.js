@@ -1,7 +1,5 @@
 
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 
 import {
     getDatabase,
@@ -11,39 +9,38 @@ import {
     remove
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
 
-/* ==============================
+/* ==========================================
    Firebase
-============================== */
+========================================== */
 
 const firebaseConfig = {
     apiKey: "AIzaSyAaNj6Znk30zLZM3QVvEEPdSnPFjJyr_LE",
     authDomain: "transfer-2b40c.firebaseapp.com",
-    databaseURL:
-        "https://transfer-2b40c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL: "https://transfer-2b40c-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "transfer-2b40c",
     storageBucket: "transfer-2b40c.firebasestorage.app",
     messagingSenderId: "1041873060739",
     appId: "1:1041873060739:web:a61497c1cfe0854a8becb6"
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const database = getDatabase(firebaseApp);
+const database = getDatabase(initializeApp(firebaseConfig));
 
 console.log("Firebase Realtime Database 連線完成！");
 
-/* ==============================
-   主程式
-============================== */
-
 document.addEventListener("DOMContentLoaded", function () {
+
+    /* ==========================================
+       基本設定
+    ========================================== */
+
+    const $ = id => document.getElementById(id);
 
     const descriptions = {
         success: "透過總成功率可以看到成功、失敗與總數",
         visual: "亮起第一顆燈後，使用者幾秒成功接上第一條線",
         memory: "聲音播放後，燈光提示出現幾次",
         hearing: "聲音播放後，使用者成功接上第二條線的平均時間",
-        focus: "同時有1、2、3條線占整個遊戲時間的比例",
-        analysis: "透過總分析可以對比全體遊玩資料"
+        analysis: "透過總分析可以查看每局的各項遊玩數據"
     };
 
     let elderIds = [];
@@ -51,15 +48,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentProfilePage = "success";
     let currentProfileElderId = null;
 
-    // 避免快速切換日期時，舊資料覆蓋新資料
     let groupRequestVersion = 0;
     let profileRequestVersion = 0;
 
-    /* ==============================
-       取得 HTML 元素
-    ============================== */
-
-    const $ = (id) => document.getElementById(id);
+    /* ==========================================
+       HTML 元素
+    ========================================== */
 
     const categoryButtons =
         document.querySelectorAll(".category-button");
@@ -106,9 +100,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const confirmDeleteButton = $("confirmDeleteButton");
     const cancelDeleteButton = $("cancelDeleteButton");
 
-    /* ==============================
+    /* ==========================================
        日期
-    ============================== */
+    ========================================== */
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -117,32 +111,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getSelectedDateString() {
         const year = selectedDate.getFullYear();
-
-        const month = String(
-            selectedDate.getMonth() + 1
-        ).padStart(2, "0");
-
-        const day = String(
-            selectedDate.getDate()
-        ).padStart(2, "0");
+        const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+        const day = String(selectedDate.getDate()).padStart(2, "0");
 
         return `${year}-${month}-${day}`;
     }
 
     function updateDateDisplay() {
-        currentYearText.textContent =
-            selectedDate.getFullYear();
+        currentYearText.textContent = selectedDate.getFullYear();
 
         currentDateText.textContent =
             `${selectedDate.getMonth() + 1}/${selectedDate.getDate()}`;
 
-        const isToday =
-            selectedDate.getTime() >= today.getTime();
+        const isToday = selectedDate.getTime() >= today.getTime();
 
         nextDateButton.disabled = isToday;
         nextDateButton.style.opacity = isToday ? "0.3" : "1";
-        nextDateButton.style.cursor =
-            isToday ? "default" : "pointer";
+        nextDateButton.style.cursor = isToday ? "default" : "pointer";
 
         if (!groupModeContent.classList.contains("hidden")) {
             updateAllElderCards();
@@ -162,38 +147,113 @@ document.addEventListener("DOMContentLoaded", function () {
         const next = new Date(selectedDate);
         next.setDate(next.getDate() + 1);
 
-        if (next.getTime() > today.getTime()) {
-            return;
-        }
+        if (next.getTime() > today.getTime()) return;
 
         selectedDate = next;
         updateDateDisplay();
     });
 
-    /* ==============================
+    /* ==========================================
+       資料處理工具
+    ========================================== */
+
+    function safeNumber(value) {
+        if (value === null || value === undefined || value === "") {
+            return 0;
+        }
+
+        const number = Number(value);
+        return Number.isFinite(number) ? number : 0;
+    }
+
+    function safeCount(value) {
+        return Math.max(0, safeNumber(value));
+    }
+
+    function normalizeNumberList(value) {
+        if (!value) return [];
+
+        if (Array.isArray(value)) {
+            return value.filter(item =>
+                item !== null && item !== undefined
+            );
+        }
+
+        if (typeof value === "object") {
+            return Object.keys(value)
+                .sort((a, b) => Number(a) - Number(b))
+                .map(key => value[key]);
+        }
+
+        return [];
+    }
+
+    function getSuccessData(record) {
+        const completed = safeCount(record.completedCalls);
+        const failed = safeCount(record.failedCalls);
+        const total = completed + failed;
+
+        const rate = total > 0
+            ? completed / total * 100
+            : 0;
+
+        return { completed, failed, total, rate };
+    }
+
+    function getRecordTime(record) {
+        if (
+            typeof record.playedAt === "string" &&
+            record.playedAt.length >= 16
+        ) {
+            return record.playedAt.substring(11, 16);
+        }
+
+        return "--:--";
+    }
+
+    function formatTimeList(value, emptyMessage) {
+        const times = normalizeNumberList(value);
+
+        if (times.length === 0) {
+            return `${emptyMessage}<br>`;
+        }
+
+        return times.map((time, index) => `
+            第${index + 1}通：
+            ${safeNumber(time).toFixed(2)} 秒<br>
+        `).join("");
+    }
+
+    function formatOptionalNumber(value, digits = 2) {
+        if (
+            value === null ||
+            value === undefined ||
+            value === "" ||
+            !Number.isFinite(Number(value))
+        ) {
+            return "--";
+        }
+
+        return Number(value).toFixed(digits);
+    }
+
+    /* ==========================================
        Firebase 長輩編號
-    ============================== */
+    ========================================== */
 
     async function loadElderIdsFromFirebase() {
         try {
-            const snapshot = await get(
-                ref(database, "players")
-            );
+            const snapshot = await get(ref(database, "players"));
 
-            if (!snapshot.exists()) {
-                elderIds = [];
-                return;
-            }
+            elderIds = snapshot.exists()
+                ? Object.keys(snapshot.val())
+                : [];
 
-            elderIds = Object.keys(snapshot.val()).sort(
-                (a, b) => a.localeCompare(
-                    b,
-                    undefined,
-                    {
-                        numeric: true,
-                        sensitivity: "base"
-                    }
-                )
+            elderIds.sort((a, b) =>
+                a.localeCompare(b, undefined, {
+                    numeric: true,
+                    sensitivity: "base"
+                })
             );
 
         } catch (error) {
@@ -202,14 +262,55 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    /* ==============================
+    /* ==========================================
+       Firebase 每日紀錄
+    ========================================== */
+
+    async function loadElderDailyRecords(
+        elderId,
+        dateString = getSelectedDateString()
+    ) {
+        try {
+            const path =
+                `players/${elderId}/dates/${dateString}/sessions`;
+
+            const snapshot = await get(ref(database, path));
+
+            if (!snapshot.exists()) return [];
+
+            const result = Object.entries(snapshot.val())
+                .filter(([, session]) =>
+                    session && typeof session === "object"
+                )
+                .map(([id, session]) => ({
+                    ...session,
+                    id
+                }));
+
+            result.sort((a, b) => {
+                const timeA = String(a.playedAt ?? "");
+                const timeB = String(b.playedAt ?? "");
+
+                return timeA.localeCompare(timeB) ||
+                    String(a.id).localeCompare(String(b.id));
+            });
+
+            return result;
+
+        } catch (error) {
+            console.error("讀取遊玩紀錄失敗：", error);
+            return [];
+        }
+    }
+
+    /* ==========================================
        全體模式卡片
-    ============================== */
+    ========================================== */
 
     function renderElderCards() {
         peopleGrid.innerHTML = "";
 
-        elderIds.forEach(function (elderId) {
+        elderIds.forEach(elderId => {
             const card = document.createElement("article");
             card.className = "person-card";
             card.dataset.elderId = elderId;
@@ -235,165 +336,24 @@ document.addEventListener("DOMContentLoaded", function () {
         const keyword = groupSearchInput.value.trim();
 
         peopleGrid.querySelectorAll(".person-card")
-            .forEach(function (card) {
+            .forEach(card => {
                 card.style.display =
-                    !keyword ||
-                    card.dataset.elderId.includes(keyword)
+                    !keyword || card.dataset.elderId.includes(keyword)
                         ? ""
                         : "none";
             });
     }
 
-    groupSearchInput.addEventListener(
-        "input",
-        filterGroupCards
-    );
-
-    /* ==============================
-       數字處理
-    ============================== */
-
-    function safeNumber(value) {
-        const number = Number(value);
-        return Number.isFinite(number) ? number : 0;
-    }
-
-    function safeCount(value) {
-        return Math.max(0, safeNumber(value));
-    }
-
-    function normalizeNumberList(value) {
-        if (!value) {
-            return [];
-        }
-
-        if (Array.isArray(value)) {
-            return value.filter(
-                item => item !== null && item !== undefined
-            );
-        }
-
-        if (typeof value === "object") {
-            return Object.keys(value)
-                .sort((a, b) => Number(a) - Number(b))
-                .map(key => value[key]);
-        }
-
-        return [];
-    }
-
-    function getSuccessData(record) {
-        const completed = safeCount(record.completedCalls);
-        const failed = safeCount(record.failedCalls);
-        const total = completed + failed;
-
-        const rate = total > 0
-            ? completed / total * 100
-            : 0;
-
-        return {
-            completed,
-            failed,
-            total,
-            rate
-        };
-    }
-
-    function getRecordTime(record) {
-        if (
-            typeof record.playedAt === "string" &&
-            record.playedAt.length >= 16
-        ) {
-            return record.playedAt.substring(11, 16);
-        }
-
-        return "--:--";
-    }
-
-    function formatTimeList(value) {
-        const times = normalizeNumberList(value);
-
-        if (times.length === 0) {
-            return "無反應時間紀錄<br>";
-        }
-
-        return times.map((time, index) => {
-            return `第${index + 1}通：
-                    ${safeNumber(time).toFixed(2)} 秒<br>`;
-        }).join("");
-    }
-
-    /* ==============================
-       讀取每日每局資料
-    ============================== */
-
-    async function loadElderDailyRecords(
-        elderId,
-        dateString = getSelectedDateString()
-    ) {
-        try {
-            const sessionsPath =
-                `players/${elderId}/dates/${dateString}/sessions`;
-
-            const snapshot = await get(
-                ref(database, sessionsPath)
-            );
-
-            if (!snapshot.exists()) {
-                return [];
-            }
-
-            const sessions = snapshot.val();
-
-            const result = Object.entries(sessions)
-                .filter(([, session]) =>
-                    session && typeof session === "object"
-                )
-                .map(([sessionId, session]) => ({
-                    ...session,
-                    id: sessionId
-                }));
-
-            // 先按時間由舊到新排列
-            result.sort((a, b) => {
-                const timeA = String(a.playedAt ?? "");
-                const timeB = String(b.playedAt ?? "");
-
-                const comparison = timeA.localeCompare(timeB);
-
-                if (comparison !== 0) {
-                    return comparison;
-                }
-
-                return String(a.id).localeCompare(String(b.id));
-            });
-
-            return result;
-
-        } catch (error) {
-            console.error(
-                `讀取編號 ${elderId} 的紀錄失敗：`,
-                error
-            );
-
-            return [];
-        }
-    }
-
-    /* ==============================
-       全體模式：最新一筆
-    ============================== */
+    groupSearchInput.addEventListener("input", filterGroupCards);
 
     function createLatestRecordHtml(record, page) {
         const time = getRecordTime(record);
+        const data = getSuccessData(record);
 
         if (page === "success") {
-            const data = getSuccessData(record);
-
             return `
                 <div class="record-detail">
-                    最新紀錄：${time}
-                    <br><br>
+                    最新紀錄：${time}<br><br>
                     成功：${data.completed} 次<br>
                     失敗：${data.failed} 次<br>
                     總數：${data.total} 次<br>
@@ -405,13 +365,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (page === "visual") {
             return `
                 <div class="record-detail">
-                    最新紀錄：${time}
-                    <br><br>
-                    ${formatTimeList(record.visualTimes)}
+                    最新紀錄：${time}<br><br>
+                    ${formatTimeList(record.visualTimes, "無視覺反應紀錄")}
                     <strong>
                         平均：
-                        ${safeNumber(record.averageVisualTime).toFixed(2)}
-                        秒
+                        ${safeNumber(record.averageVisualTime).toFixed(2)} 秒
                     </strong>
                 </div>
             `;
@@ -420,10 +378,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (page === "memory") {
             return `
                 <div class="record-detail">
-                    最新紀錄：${time}
-                    <br><br>
-                    提示次數：
-                    ${safeCount(record.hintCount)} 次
+                    最新紀錄：${time}<br><br>
+                    提示次數：${safeCount(record.hintCount)} 次
                 </div>
             `;
         }
@@ -431,31 +387,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (page === "hearing") {
             return `
                 <div class="record-detail">
-                    最新紀錄：${time}
-                    <br><br>
-                    ${formatTimeList(record.hearingTimes)}
+                    最新紀錄：${time}<br><br>
+                    ${formatTimeList(record.hearingTimes, "無聽力反應紀錄")}
                     <strong>
                         平均：
-                        ${safeNumber(record.averageHearingTime).toFixed(2)}
-                        秒
+                        ${safeNumber(record.averageHearingTime).toFixed(2)} 秒
                     </strong>
                 </div>
             `;
         }
 
-        const data = getSuccessData(record);
-
         return `
             <div class="record-detail">
-                最新紀錄：${time}
-                <br><br>
+                最新紀錄：${time}<br><br>
                 成功率：${data.rate.toFixed(1)}%<br>
                 平均視覺反應：
-                ${safeNumber(record.averageVisualTime).toFixed(2)} 秒
-                <br>
-                提示次數：
-                ${safeCount(record.hintCount)} 次
-                <br>
+                ${safeNumber(record.averageVisualTime).toFixed(2)} 秒<br>
+                提示次數：${safeCount(record.hintCount)} 次<br>
                 平均聽力反應：
                 ${safeNumber(record.averageHearingTime).toFixed(2)} 秒
             </div>
@@ -468,56 +416,40 @@ document.addEventListener("DOMContentLoaded", function () {
         const page = currentGroupPage;
 
         for (const elderId of elderIds) {
-            if (version !== groupRequestVersion) {
-                return;
-            }
+            if (version !== groupRequestVersion) return;
 
-            const dataElement = $("elderData_" + elderId);
+            const element = $("elderData_" + elderId);
+            if (!element) continue;
 
-            if (!dataElement) {
-                continue;
-            }
-
-            dataElement.textContent = "資料讀取中...";
+            element.textContent = "資料讀取中...";
 
             const records = await loadElderDailyRecords(
                 elderId,
                 dateString
             );
 
-            if (version !== groupRequestVersion) {
-                return;
-            }
-
-            if (!dataElement.isConnected) {
-                continue;
-            }
+            if (version !== groupRequestVersion) return;
+            if (!element.isConnected) continue;
 
             if (records.length === 0) {
-                dataElement.textContent = "當日無遊玩紀錄";
+                element.textContent = "當日無遊玩紀錄";
                 continue;
             }
 
-            const latest = records[records.length - 1];
-
-            dataElement.innerHTML =
-                createLatestRecordHtml(latest, page);
+            element.innerHTML = createLatestRecordHtml(
+                records[records.length - 1],
+                page
+            );
         }
     }
 
-    /* ==============================
-       全體模式頁籤
-    ============================== */
-
-    categoryButtons.forEach(function (button) {
+    categoryButtons.forEach(button => {
         button.addEventListener("click", function () {
-
             categoryButtons.forEach(item =>
                 item.classList.remove("active")
             );
 
             button.classList.add("active");
-
             currentGroupPage = button.dataset.page;
 
             pageDescription.textContent =
@@ -527,22 +459,20 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    /* ==============================
+    /* ==========================================
        模式切換
-    ============================== */
+    ========================================== */
 
     modeButton.addEventListener("click", function () {
         modeDropdown.classList.toggle("show");
     });
 
-    modeOptions.forEach(function (option) {
+    modeOptions.forEach(option => {
         option.addEventListener("click", function () {
             const mode = option.dataset.mode;
 
             if (mode === "group") {
-                document.body.classList.remove(
-                    "single-mode-active"
-                );
+                document.body.classList.remove("single-mode-active");
 
                 modeButtonText.textContent = "全體模式";
                 modeSubtitle.textContent = "當日遊玩數";
@@ -554,9 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 updateAllElderCards();
 
             } else {
-                document.body.classList.add(
-                    "single-mode-active"
-                );
+                document.body.classList.add("single-mode-active");
 
                 modeButtonText.textContent = "單人模式";
 
@@ -577,9 +505,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    /* ==============================
-       單人模式：頁面切換
-    ============================== */
+    /* ==========================================
+       單人模式頁面
+    ========================================== */
 
     function showSearchPanel() {
         profileRequestVersion++;
@@ -603,19 +531,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     openAddElder.addEventListener("click", showAddPanel);
     backToSearch.addEventListener("click", showSearchPanel);
-    backToSingleSearch.addEventListener(
-        "click",
-        showSearchPanel
-    );
+    backToSingleSearch.addEventListener("click", showSearchPanel);
 
-    /* ==============================
-       新增長輩編號
-    ============================== */
+    /* ==========================================
+       新增長輩
+    ========================================== */
 
     async function addElder() {
         const elderId = newElderInput.value.trim();
 
-        if (elderId === "") {
+        if (!elderId) {
             alert("請輸入長輩編號");
             return;
         }
@@ -638,35 +563,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            await set(elderReference, {
-                exists: true
-            });
+            await set(elderReference, { exists: true });
 
             if (!elderIds.includes(elderId)) {
                 elderIds.push(elderId);
 
                 elderIds.sort((a, b) =>
-                    a.localeCompare(
-                        b,
-                        undefined,
-                        {
-                            numeric: true,
-                            sensitivity: "base"
-                        }
-                    )
+                    a.localeCompare(b, undefined, {
+                        numeric: true,
+                        sensitivity: "base"
+                    })
                 );
             }
 
             renderElderCards();
-
             newElderInput.value = "";
 
             alert(`長輩編號 ${elderId} 新增成功`);
-
             showSearchPanel();
 
         } catch (error) {
-            console.error("新增長輩編號失敗：", error);
+            console.error("新增長輩失敗：", error);
             alert("新增失敗，請檢查 Firebase 連線或權限");
         }
     }
@@ -674,19 +591,17 @@ document.addEventListener("DOMContentLoaded", function () {
     addElderButton.addEventListener("click", addElder);
 
     newElderInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            addElder();
-        }
+        if (event.key === "Enter") addElder();
     });
 
-    /* ==============================
-       查詢長輩編號
-    ============================== */
+    /* ==========================================
+       查詢長輩
+    ========================================== */
 
     async function searchElder() {
         const elderId = singleSearchInput.value.trim();
 
-        if (elderId === "") {
+        if (!elderId) {
             alert("請輸入長輩編號");
             return;
         }
@@ -710,28 +625,16 @@ document.addEventListener("DOMContentLoaded", function () {
             showProfilePanel(elderId);
 
         } catch (error) {
-            console.error("查詢長輩編號失敗：", error);
+            console.error("查詢長輩失敗：", error);
             alert("查詢失敗，請稍後再試");
         }
     }
 
-    singleSearchButton.addEventListener(
-        "click",
-        searchElder
-    );
+    singleSearchButton.addEventListener("click", searchElder);
 
-    singleSearchInput.addEventListener(
-        "keydown",
-        function (event) {
-            if (event.key === "Enter") {
-                searchElder();
-            }
-        }
-    );
-
-    /* ==============================
-       單人模式：個人資料頁
-    ============================== */
+    singleSearchInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") searchElder();
+    });
 
     function showProfilePanel(elderId) {
         singleSearchPanel.classList.add("hidden");
@@ -739,213 +642,437 @@ document.addEventListener("DOMContentLoaded", function () {
         singleProfilePanel.classList.remove("hidden");
 
         modeSubtitle.textContent = "編號 " + elderId;
-
         currentProfilePage = "success";
 
-        profileCategoryButtons.forEach(function (button) {
+        profileCategoryButtons.forEach(button => {
             button.classList.toggle(
                 "active",
                 button.dataset.profilePage === "success"
             );
         });
 
-        profilePageDescription.textContent =
-            descriptions.success;
+        profilePageDescription.textContent = descriptions.success;
 
         updateProfileContent();
     }
 
-    /* ==============================
-       新增：單局總成功率環形圖
-    ============================== */
+    /* ==========================================
+       圖表一：總成功率環形圖
+    ========================================== */
 
     function createSuccessChartHtml(record) {
         const data = getSuccessData(record);
         const time = getRecordTime(record);
 
-        // CSS conic-gradient 環形圖
-        // 成功部分使用深紫灰色
-        // 失敗部分使用淺紫灰色
-        const rate = data.rate;
-
-        const chartBackground = data.total > 0
+        const background = data.total > 0
             ? `conic-gradient(
-                #686F98 0% ${rate}%,
-                #C9CBD9 ${rate}% 100%
+                #686F98 0% ${data.rate}%,
+                #C9CBD9 ${data.rate}% 100%
               )`
             : "#C9CBD9";
 
         return `
             <div class="record-detail">
-
                 <div class="success-record-time">
                     遊玩時間：${time}
                 </div>
 
                 <div class="success-chart-layout">
-
                     <div
                         class="success-donut"
-                        style="background: ${chartBackground};"
+                        style="background: ${background};"
                         role="img"
-                        aria-label="成功率 ${rate.toFixed(1)}%"
+                        aria-label="成功率 ${data.rate.toFixed(1)}%"
                     >
                         <div class="success-donut-center">
-
                             <div class="success-donut-rate">
-                                ${rate.toFixed(1)}%
+                                ${data.rate.toFixed(1)}%
                             </div>
-
                             <div class="success-donut-label">
                                 成功率
                             </div>
-
                         </div>
                     </div>
 
                     <div class="success-stat-list">
-
                         <div class="success-stat">
-                            <span
-                                class="success-stat-dot success-dot-completed"
-                            ></span>
-
+                            <span class="success-stat-dot success-dot-completed"></span>
                             <span>成功次數</span>
-
-                            <strong>
-                                ${data.completed} 次
-                            </strong>
+                            <strong>${data.completed} 次</strong>
                         </div>
 
                         <div class="success-stat">
-                            <span
-                                class="success-stat-dot success-dot-failed"
-                            ></span>
-
+                            <span class="success-stat-dot success-dot-failed"></span>
                             <span>失敗次數</span>
-
-                            <strong>
-                                ${data.failed} 次
-                            </strong>
+                            <strong>${data.failed} 次</strong>
                         </div>
 
                         <div class="success-stat success-stat-total">
                             <span>總次數</span>
+                            <strong>${data.total} 次</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
-                            <strong>
-                                ${data.total} 次
-                            </strong>
+    /* ==========================================
+       共用：反應時間長條圖
+       視覺資訊、聽力資訊使用
+    ========================================== */
+
+    function createReactionChartHtml(record, type) {
+        const isVisual = type === "visual";
+
+        const time = getRecordTime(record);
+
+        const values = normalizeNumberList(
+            isVisual ? record.visualTimes : record.hearingTimes
+        ).map(safeCount);
+
+        const averageValue = isVisual
+            ? record.averageVisualTime
+            : record.averageHearingTime;
+
+        const average = formatOptionalNumber(averageValue);
+
+        const title = isVisual
+            ? "視覺反應時間"
+            : "聽力反應時間";
+
+        const layoutClass = isVisual
+            ? "visual-chart-layout"
+            : "hearing-chart-layout";
+
+        if (values.length === 0) {
+            return `
+                <div class="record-detail">
+                    遊玩時間：${time}
+
+                    <div class="${layoutClass}">
+                        <div class="visual-empty">
+                            無${isVisual ? "視覺" : "聽力"}反應紀錄
+                        </div>
+
+                        <div class="visual-average">
+                            <span>平均${title}</span>
+                            <strong>${average} 秒</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Y 軸自動刻度，避免固定秒數導致長條超出範圍
+        const maximum = Math.max(...values, 0.1);
+        const rawStep = maximum / 4;
+        const magnitude = Math.pow(
+            10,
+            Math.floor(Math.log10(rawStep))
+        );
+
+        const normalizedStep = rawStep / magnitude;
+
+        const niceStep = (
+            normalizedStep <= 1 ? 1 :
+            normalizedStep <= 2 ? 2 :
+            normalizedStep <= 2.5 ? 2.5 :
+            normalizedStep <= 5 ? 5 : 10
+        ) * magnitude;
+
+        const axisMaximum = niceStep * 4;
+
+        const ticks = Array.from(
+            { length: 5 },
+            (_, index) => axisMaximum - niceStep * index
+        );
+
+        const yAxisHtml = ticks.map(value => `
+            <span>${Number(value.toFixed(3))}</span>
+        `).join("");
+
+        const gridlinesHtml = ticks.map(() => `
+            <div class="visual-gridline"></div>
+        `).join("");
+
+        const barsHtml = values.map((seconds, index) => {
+            const percentage = Math.min(
+                100,
+                seconds / axisMaximum * 100
+            );
+
+            return `
+                <div
+                    class="visual-bar-item"
+                    style="--bar-height: ${percentage}%"
+                >
+                    <div class="visual-bar-value">
+                        ${seconds.toFixed(2)}s
+                    </div>
+
+                    <div class="visual-bar"></div>
+
+                    <div class="visual-bar-label">
+                        第${index + 1}通
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        return `
+            <div class="record-detail">
+                <div class="success-record-time">
+                    遊玩時間：${time}
+                </div>
+
+                <div class="${layoutClass}">
+                    <div class="visual-chart-heading">
+                        ${title}（秒）
+                    </div>
+
+                    <div class="visual-chart-scroll">
+                        <div
+                            class="visual-chart"
+                            style="min-width: ${Math.max(500, values.length * 90)}px"
+                        >
+                            <div class="visual-y-axis">
+                                ${yAxisHtml}
+                            </div>
+
+                            <div class="visual-plot">
+                                <div class="visual-gridlines">
+                                    ${gridlinesHtml}
+                                </div>
+
+                                <div class="visual-bars">
+                                    ${barsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="visual-average">
+                        <span>平均${title}</span>
+                        <strong>${average} 秒</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /* ==========================================
+       圖表二：視覺資訊
+    ========================================== */
+
+    function createVisualChartHtml(record) {
+        return createReactionChartHtml(record, "visual");
+    }
+
+    /* ==========================================
+       圖表三：記憶力提示次數
+    ========================================== */
+
+    function createMemoryChartHtml(record) {
+        const time = getRecordTime(record);
+        const hints = safeCount(record.hintCount);
+
+        // 每局獨立刻度，採用整數且至少顯示 5 次的範圍
+        const scaleMaximum = Math.max(
+            5,
+            Math.ceil(hints / 5) * 5
+        );
+
+        const percentage = scaleMaximum > 0
+            ? hints / scaleMaximum * 100
+            : 0;
+
+        return `
+            <div class="record-detail">
+                <div class="success-record-time">
+                    遊玩時間：${time}
+                </div>
+
+                <div class="memory-chart-layout">
+                    <div class="memory-chart-heading">
+                        本局燈光提示次數
+                    </div>
+
+                    <div class="memory-count">
+                        <strong>${hints}</strong>
+                        <span>次提示</span>
+                    </div>
+
+                    <div
+                        class="memory-bar-track"
+                        role="img"
+                        aria-label="本局提示 ${hints} 次"
+                    >
+                        <div
+                            class="memory-bar-fill"
+                            style="width: ${percentage}%"
+                        ></div>
+                    </div>
+
+                    <div class="memory-scale">
+                        <span>0 次</span>
+                        <span>${scaleMaximum} 次</span>
+                    </div>
+
+                    <div class="memory-note">
+                        顯示本局實際提示次數，刻度依數值調整。
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /* ==========================================
+       圖表四：聽力資訊
+    ========================================== */
+
+    function createHearingChartHtml(record) {
+        return createReactionChartHtml(record, "hearing");
+    }
+
+    /* ==========================================
+       圖表五：總分析
+       每局獨立分析，不跨局合併
+    ========================================== */
+
+    function createAnalysisChartHtml(record) {
+        const time = getRecordTime(record);
+        const data = getSuccessData(record);
+
+        const visual = formatOptionalNumber(
+            record.averageVisualTime
+        );
+
+        const hearing = formatOptionalNumber(
+            record.averageHearingTime
+        );
+
+        const hints = safeCount(record.hintCount);
+
+        // 只對真正的百分比使用比例長條
+        const rateWidth = Math.max(
+            0,
+            Math.min(100, data.rate)
+        );
+
+        return `
+            <div class="record-detail">
+                <div class="success-record-time">
+                    遊玩時間：${time}
+                </div>
+
+                <div class="analysis-layout">
+                    <div class="analysis-heading">
+                        本局遊玩數據總覽
+                    </div>
+
+                    <div class="analysis-grid">
+
+                        <div class="analysis-metric">
+                            <div class="analysis-metric-title">
+                                總成功率
+                            </div>
+
+                            <div class="analysis-metric-value">
+                                ${data.rate.toFixed(1)}
+                                <small>%</small>
+                            </div>
+
+                            <div class="analysis-mini-track">
+                                <div
+                                    class="analysis-mini-fill"
+                                    style="width: ${rateWidth}%"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <div class="analysis-metric">
+                            <div class="analysis-metric-title">
+                                平均視覺反應時間
+                            </div>
+
+                            <div class="analysis-metric-value">
+                                ${visual}
+                                <small>秒</small>
+                            </div>
+                        </div>
+
+                        <div class="analysis-metric">
+                            <div class="analysis-metric-title">
+                                燈光提示次數
+                            </div>
+
+                            <div class="analysis-metric-value">
+                                ${hints}
+                                <small>次</small>
+                            </div>
+                        </div>
+
+                        <div class="analysis-metric">
+                            <div class="analysis-metric-title">
+                                平均聽力反應時間
+                            </div>
+
+                            <div class="analysis-metric-value">
+                                ${hearing}
+                                <small>秒</small>
+                            </div>
                         </div>
 
                     </div>
 
-                </div>
+                    <div class="analysis-summary">
+                        <div class="analysis-summary-title">
+                            本局遊玩摘要
+                        </div>
 
+                        <p>成功接線：${data.completed} 次</p>
+                        <p>失敗接線：${data.failed} 次</p>
+                        <p>總接線次數：${data.total} 次</p>
+                        <p>總成功率：${data.rate.toFixed(1)}%</p>
+                    </div>
+                </div>
             </div>
         `;
     }
 
-    /* ==============================
-       單人模式：其他頁籤文字
-    ============================== */
+    /* ==========================================
+       根據頁籤選擇圖表
+    ========================================== */
 
     function createProfileRecordHtml(record, page) {
-        const time = getRecordTime(record);
+        switch (page) {
+            case "success":
+                return createSuccessChartHtml(record);
 
-        // 只有總成功率改成圖表
-        if (page === "success") {
-            return createSuccessChartHtml(record);
+            case "visual":
+                return createVisualChartHtml(record);
+
+            case "memory":
+                return createMemoryChartHtml(record);
+
+            case "hearing":
+                return createHearingChartHtml(record);
+
+            case "analysis":
+                return createAnalysisChartHtml(record);
+
+            default:
+                return "";
         }
-
-        if (page === "visual") {
-            return `
-                <div class="record-detail">
-                    遊玩時間：${time}
-                    <br><br>
-                    ${formatTimeList(record.visualTimes)}
-                    <strong>
-                        平均：
-                        ${safeNumber(record.averageVisualTime).toFixed(2)}
-                        秒
-                    </strong>
-                </div>
-            `;
-        }
-
-        if (page === "memory") {
-            return `
-                <div class="record-detail">
-                    遊玩時間：${time}
-                    <br><br>
-                    提示次數：
-                    ${safeCount(record.hintCount)} 次
-                </div>
-            `;
-        }
-
-        if (page === "hearing") {
-            return `
-                <div class="record-detail">
-                    遊玩時間：${time}
-                    <br><br>
-                    ${formatTimeList(record.hearingTimes)}
-                    <strong>
-                        平均：
-                        ${safeNumber(record.averageHearingTime).toFixed(2)}
-                        秒
-                    </strong>
-                </div>
-            `;
-        }
-
-        if (page === "focus") {
-            const focus = record.focusPercentage || {};
-
-            return `
-                <div class="record-detail">
-                    遊玩時間：${time}
-                    <br><br>
-                    1組線：
-                    ${safeNumber(focus.oneLine).toFixed(1)}%
-                    <br>
-                    2組線：
-                    ${safeNumber(focus.twoLines).toFixed(1)}%
-                    <br>
-                    3組線：
-                    ${safeNumber(focus.threeLines).toFixed(1)}%
-                </div>
-            `;
-        }
-
-        // 總分析：暫時保留原本的每局摘要
-        const data = getSuccessData(record);
-
-        return `
-            <div class="record-detail">
-                遊玩時間：${time}
-                <br><br>
-                成功率：${data.rate.toFixed(1)}%
-                <br>
-                平均視覺反應：
-                ${safeNumber(record.averageVisualTime).toFixed(2)} 秒
-                <br>
-                提示次數：
-                ${safeCount(record.hintCount)} 次
-                <br>
-                平均聽力反應：
-                ${safeNumber(record.averageHearingTime).toFixed(2)} 秒
-            </div>
-        `;
     }
 
-    /* ==============================
-       更新單人模式資料
-    ============================== */
+    /* ==========================================
+       更新單人模式紀錄
+    ========================================== */
 
     async function updateProfileContent() {
-        if (!currentProfileElderId) {
-            return;
-        }
+        if (!currentProfileElderId) return;
 
         const version = ++profileRequestVersion;
         const elderId = currentProfileElderId;
@@ -959,8 +1086,6 @@ document.addEventListener("DOMContentLoaded", function () {
             dateString
         );
 
-        // 使用者已切換日期、頁籤或編號時
-        // 不讓舊的讀取結果覆蓋新畫面
         if (
             version !== profileRequestVersion ||
             singleProfilePanel.classList.contains("hidden")
@@ -973,48 +1098,36 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        /*
-           records 已依時間由舊到新排列。
-           反轉顯示順序，讓最新一局在最上面。
-           但局數仍依當天實際遊玩順序編號。
-        */
-
-        const numberedRecords = records.map(
-            (record, index) => ({
-                record,
-                sessionNumber: index + 1
-            })
-        );
+        // 先按照實際遊玩順序編號，再反轉顯示
+        const numberedRecords = records.map((record, index) => ({
+            record,
+            sessionNumber: index + 1
+        }));
 
         numberedRecords.reverse();
 
-        const html = numberedRecords.map(function (item) {
-            return `
-                <div class="profile-session-record">
+        profileContent.innerHTML = numberedRecords.map(item => `
+            <div class="profile-session-record">
 
-                    <div class="profile-session-title">
-                        第 ${item.sessionNumber} 局
-                    </div>
-
-                    ${createProfileRecordHtml(
-                        item.record,
-                        page
-                    )}
-
+                <div class="profile-session-title">
+                    第 ${item.sessionNumber} 局
                 </div>
-            `;
-        }).join("");
 
-        profileContent.innerHTML = html;
+                ${createProfileRecordHtml(
+                    item.record,
+                    page
+                )}
+
+            </div>
+        `).join("");
     }
 
-    /* ==============================
+    /* ==========================================
        單人模式頁籤
-    ============================== */
+    ========================================== */
 
-    profileCategoryButtons.forEach(function (button) {
+    profileCategoryButtons.forEach(button => {
         button.addEventListener("click", function () {
-
             profileCategoryButtons.forEach(item =>
                 item.classList.remove("active")
             );
@@ -1031,14 +1144,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    /* ==============================
-       刪除長輩編號
-    ============================== */
+    /* ==========================================
+       刪除長輩
+    ========================================== */
 
     deleteElderButton.addEventListener("click", function () {
-        if (!currentProfileElderId) {
-            return;
-        }
+        if (!currentProfileElderId) return;
 
         deleteModalText.textContent =
             "是否確認刪除 " + currentProfileElderId;
@@ -1053,22 +1164,14 @@ document.addEventListener("DOMContentLoaded", function () {
     confirmDeleteButton.addEventListener(
         "click",
         async function () {
-
-            if (!currentProfileElderId) {
-                return;
-            }
+            if (!currentProfileElderId) return;
 
             const elderIdToDelete = currentProfileElderId;
-
-            // 防止連續點擊
             confirmDeleteButton.disabled = true;
 
             try {
                 await remove(
-                    ref(
-                        database,
-                        "players/" + elderIdToDelete
-                    )
+                    ref(database, "players/" + elderIdToDelete)
                 );
 
                 elderIds = elderIds.filter(
@@ -1088,7 +1191,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showSearchPanel();
 
             } catch (error) {
-                console.error("刪除長輩編號失敗：", error);
+                console.error("刪除長輩失敗：", error);
                 alert("刪除失敗，請稍後再試");
 
             } finally {
@@ -1103,21 +1206,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    /* ==============================
-       第一次載入
-    ============================== */
+    /* ==========================================
+       初始化
+    ========================================== */
 
     async function initializeDashboard() {
-        document.body.classList.remove(
-            "single-mode-active"
-        );
+        document.body.classList.remove("single-mode-active");
 
         await loadElderIdsFromFirebase();
 
         renderElderCards();
         updateDateDisplay();
 
-        console.log("Transfer Dashboard 載入完成");
+        console.log("Transfer Dashboard 全部圖表載入完成！");
     }
 
     initializeDashboard();

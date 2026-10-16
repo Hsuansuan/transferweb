@@ -798,3 +798,346 @@ body.single-mode-active .delete-modal-button {
         font-size: 32px;
     }
 }
+
+
+/* ==========================================
+   單人模式：視覺資訊長條圖
+========================================== */
+
+.visual-chart-layout {
+    width: 100%;
+    padding: 15px 12px 5px;
+}
+
+.visual-chart-heading {
+    font-size: 17px;
+    font-weight: 700;
+    color: #525161;
+    margin-bottom: 18px;
+}
+
+.visual-chart {
+    width: 100%;
+    height: 290px;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.visual-y-axis {
+    width: 52px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 35px;
+    color: #77788C;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.visual-plot {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    height: 255px;
+    border-left: 2px solid #A9ADBF;
+    border-bottom: 2px solid #A9ADBF;
+}
+
+.visual-gridlines {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.visual-gridline {
+    width: 100%;
+    border-top: 1px dashed #C9CBD9;
+}
+
+.visual-bars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.visual-bar-item {
+    height: 100%;
+    min-width: 45px;
+    flex: 1;
+    max-width: 120px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.visual-bar-value {
+    position: absolute;
+    bottom: calc(var(--bar-height) + 7px);
+    font-size: 15px;
+    font-weight: 700;
+    color: #525161;
+    white-space: nowrap;
+}
+
+.visual-bar {
+    width: 65%;
+    max-width: 75px;
+    height: var(--bar-height);
+    min-height: 2px;
+    background-color: #878DA9;
+    border-radius: 8px 8px 0 0;
+}
+
+.visual-bar-label {
+    position: absolute;
+    top: calc(100% + 10px);
+    font-size: 14px;
+    font-weight: 700;
+    color: #525161;
+    white-space: nowrap;
+}
+
+.visual-chart-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 35px;
+}
+
+.visual-chart-scroll .visual-chart {
+    min-width: 500px;
+}
+
+.visual-average {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 2px solid #C9CBD9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #525161;
+    font-size: 19px;
+}
+
+.visual-average strong {
+    font-size: 29px;
+    color: #686F98;
+}
+
+.visual-empty {
+    color: #77788C;
+    font-size: 17px;
+    padding: 35px 0;
+}
+
+@media (max-width: 720px) {
+    .visual-chart-layout {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .visual-average strong {
+        font-size: 24px;
+    }
+}
+
+
+/* ==========================================
+   記憶力：提示次數圖表
+========================================== */
+
+.memory-chart-layout {
+    padding: 20px 12px;
+    color: #525161;
+}
+
+.memory-chart-heading {
+    font-size: 18px;
+    margin-bottom: 22px;
+}
+
+.memory-count {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.memory-count strong {
+    font-size: 48px;
+    color: #686F98;
+    line-height: 1.2;
+}
+
+.memory-count span {
+    font-size: 19px;
+}
+
+.memory-bar-track {
+    width: 100%;
+    max-width: 680px;
+    height: 34px;
+    border-radius: 12px;
+    background: #C9CBD9;
+    overflow: hidden;
+}
+
+.memory-bar-fill {
+    height: 100%;
+    border-radius: 12px;
+    background: #686F98;
+    transition: width .4s ease;
+}
+
+.memory-scale {
+    max-width: 680px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 9px;
+    font-size: 14px;
+    color: #77788C;
+}
+
+.memory-note {
+    margin-top: 18px;
+    font-size: 15px;
+    color: #77788C;
+}
+
+/* ==========================================
+   聽力資訊：長條圖
+========================================== */
+
+.hearing-chart-layout {
+    width: 100%;
+    padding: 15px 12px 5px;
+}
+
+.hearing-chart-layout .visual-bar {
+    background-color: #686F98;
+}
+
+.hearing-chart-layout .visual-average strong {
+    color: #686F98;
+}
+
+/* ==========================================
+   總分析：單局綜合數據
+========================================== */
+
+.analysis-layout {
+    padding: 14px 10px 10px;
+    color: #525161;
+}
+
+.analysis-heading {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.analysis-metric {
+    min-width: 0;
+    padding: 22px 24px;
+    border: 2px solid #C9CBD9;
+    border-radius: 14px;
+    background: #F0F0F5;
+}
+
+.analysis-metric-title {
+    font-size: 16px;
+    color: #77788C;
+    margin-bottom: 12px;
+}
+
+.analysis-metric-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #525161;
+    overflow-wrap: anywhere;
+}
+
+.analysis-metric-value small {
+    font-size: 17px;
+}
+
+.analysis-mini-track {
+    height: 12px;
+    margin-top: 16px;
+    border-radius: 10px;
+    background: #C9CBD9;
+    overflow: hidden;
+}
+
+.analysis-mini-fill {
+    height: 100%;
+    background: #686F98;
+    border-radius: 10px;
+}
+
+.analysis-summary {
+    margin-top: 20px;
+    padding: 18px 24px;
+    border-radius: 12px;
+    background: #D9DBE7;
+    color: #525161;
+    font-size: 17px;
+    line-height: 1.9;
+}
+
+.analysis-summary-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.analysis-summary p {
+    margin: 3px 0;
+}
+
+/* ==========================================
+   手機與平板
+========================================== */
+
+@media (max-width: 720px) {
+    .memory-chart-layout,
+    .hearing-chart-layout,
+    .analysis-layout {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analysis-metric {
+        padding: 18px;
+    }
+
+    .analysis-metric-value {
+        font-size: 27px;
+    }
+
+    .analysis-summary {
+        padding: 16px;
+    }
+}
