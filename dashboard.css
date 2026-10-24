@@ -1,43 +1,101 @@
 
-/* ==============================
-   基本設定
-============================== */
+/* =========================================================
+   Transfer 接線中｜後台儀表板
+   dashboard.css
+
+   01. 全域設定
+   02. 頂部資訊列
+   03. 日期選擇器
+   04. 模式切換
+   05. 全體模式
+   06. 單人模式
+   07. 單人模式配色
+   08. 刪除確認視窗
+   09. 成功率圖表
+   10. 視覺資訊圖表
+   11. 記憶力與聽力圖表
+   12. 基本分析圖表
+   13. 全體總分析
+   14. 單人總分析
+   15. 響應式排版
+========================================================= */
+
+
+/* =========================================================
+   01. 全域設定
+========================================================= */
+
+:root {
+    /* 全體模式 */
+    --group-bg: #F3F1E9;
+    --group-primary: #B2B193;
+    --group-text: #70651F;
+
+    /* 單人模式 */
+    --single-bg: #E7E8EF;
+    --single-primary: #878DA9;
+    --single-text: #525161;
+    --single-accent: #686F98;
+    --single-muted: #77788C;
+    --single-line: #C9CBD9;
+
+    /* 共用設定 */
+    --card-radius: 13px;
+    --card-border: 9px;
+}
 
 * {
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
 }
 
 body {
     min-height: 100vh;
-    background-color: #f3f1e9;
-    color: #70651f;
-    font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    background-color: var(--group-bg);
+    color: var(--group-text);
+
+    font-family:
+        "Microsoft JhengHei",
+        "Noto Sans TC",
+        sans-serif;
+
     font-weight: 700;
+}
+
+button,
+input {
+    font-family: inherit;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* ==============================
-   Header
-============================== */
+
+/* =========================================================
+   02. 頂部資訊列
+========================================================= */
 
 .top-header {
-    width: 100%;
-    height: 140px;
-    background-color: #b2b193;
-    display: flex;
-    align-items: center;
-    padding: 20px 48px;
     position: relative;
     z-index: 10;
+
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    height: 140px;
+    padding: 20px 48px;
+
+    background-color: var(--group-primary);
 }
+
+/* 日期左右切換 */
 
 .date-area {
     display: flex;
@@ -46,29 +104,35 @@ body {
 }
 
 .date-arrow {
+    padding: 0;
     border: none;
+
     background: transparent;
-    color: #70651f;
+    color: var(--group-text);
+
     font-size: 32px;
     cursor: pointer;
-    padding: 0;
 }
 
+/* 日期卡片 */
+
 .date-card {
-    width: 132px;
-    height: 92px;
-    background-color: #f3f1e9;
-    border-radius: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
+    width: 132px;
+    height: 92px;
+
+    border-radius: 10px;
+    background-color: var(--group-bg);
 }
 
 .year {
+    margin-bottom: 1px;
     font-size: 16px;
     letter-spacing: 2px;
-    margin-bottom: 1px;
 }
 
 .date {
@@ -76,7 +140,225 @@ body {
     line-height: 1;
 }
 
-/* 模式切換 */
+/* 右上角選單 */
+
+.menu-button {
+    position: absolute;
+    top: 25px;
+    right: 22px;
+
+    border: none;
+    background: transparent;
+
+    color: var(--group-text);
+    font-size: 38px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   03. 日期選擇器
+========================================================= */
+
+#openCalendarButton {
+    padding: 0;
+    border: none;
+
+    color: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+#openCalendarButton:hover {
+    opacity: 0.8;
+}
+
+#openCalendarButton:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 4px;
+}
+
+/* 日曆容器 */
+
+.calendar-wrapper {
+    position: relative;
+
+    --calendar-bg: #B2B193;
+    --calendar-text: #70651F;
+    --calendar-selected: #70651F;
+    --calendar-selected-text: #F3F1E9;
+    --calendar-hover: #DEDCCB;
+    --calendar-border: #F3F1E9;
+}
+
+/* 日曆彈出視窗 */
+
+.custom-calendar {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    z-index: 200;
+
+    transform: translateX(-50%);
+
+    width: 322px;
+    max-width: calc(100vw - 24px);
+    padding: 17px;
+
+    border: 2px solid var(--calendar-border);
+    border-radius: 15px;
+
+    background: var(--calendar-bg);
+    color: var(--calendar-text);
+
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.15);
+
+    font-family: inherit;
+    font-weight: 700;
+}
+
+/* 日曆標題 */
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.calendar-month-title {
+    font-size: 19px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.calendar-month-arrow {
+    padding: 7px 10px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    color: inherit;
+
+    font: inherit;
+    font-size: 17px;
+
+    cursor: pointer;
+}
+
+.calendar-month-arrow:hover:not(:disabled) {
+    background: var(--calendar-border);
+}
+
+.calendar-month-arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* 星期與日期 */
+
+.calendar-weekdays,
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.calendar-weekdays {
+    margin-bottom: 7px;
+}
+
+.calendar-weekdays span {
+    padding: 5px 0;
+    text-align: center;
+    font-size: 13px;
+}
+
+.calendar-days {
+    min-height: 204px;
+}
+
+.calendar-days button {
+    width: 100%;
+    height: 35px;
+    padding: 0;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+    color: inherit;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.calendar-days button:hover:not(:disabled):not(.selected) {
+    background: var(--calendar-border);
+}
+
+.calendar-days button.selected,
+.calendar-days button.active {
+    background: var(--calendar-selected);
+    color: var(--calendar-selected-text);
+}
+
+.calendar-days button:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+.calendar-days .calendar-empty {
+    height: 35px;
+}
+
+/* 日曆底部 */
+
+.calendar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+    margin-top: 13px;
+    padding-top: 12px;
+
+    border-top: 1px solid var(--calendar-border);
+    font-size: 13px;
+}
+
+.calendar-today-button {
+    padding: 6px 12px;
+
+    border: 1px solid var(--calendar-text);
+    border-radius: 8px;
+
+    background: transparent;
+    color: inherit;
+
+    font: inherit;
+    cursor: pointer;
+}
+
+.calendar-today-button:hover {
+    background: var(--calendar-border);
+}
+
+
+/* =========================================================
+   04. 模式切換
+========================================================= */
 
 .mode-area {
     margin-left: 35px;
@@ -89,19 +371,24 @@ body {
 }
 
 .mode-button {
-    height: 56px;
-    border: none;
-    border-radius: 7px;
-    background-color: #f3f1e9;
-    color: #70651f;
-    font-family: inherit;
-    font-size: 30px;
-    font-weight: 700;
-    padding: 5px 14px;
-    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 15px;
+
+    height: 56px;
+    padding: 5px 14px;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: var(--group-bg);
+    color: var(--group-text);
+
+    font-family: inherit;
+    font-size: 30px;
+    font-weight: 700;
+
+    cursor: pointer;
 }
 
 .mode-triangle {
@@ -114,17 +401,22 @@ body {
     letter-spacing: 1px;
 }
 
+/* 模式下拉選單 */
+
 .mode-dropdown {
     position: absolute;
-    left: 0;
     top: calc(100% + 6px);
-    min-width: 175px;
-    background-color: #f3f1e9;
-    border: 4px solid #b2b193;
-    border-radius: 9px;
-    overflow: hidden;
-    display: none;
+    left: 0;
     z-index: 100;
+
+    display: none;
+    min-width: 175px;
+
+    border: 4px solid var(--group-primary);
+    border-radius: 9px;
+
+    background-color: var(--group-bg);
+    overflow: hidden;
 }
 
 .mode-dropdown.show {
@@ -133,49 +425,46 @@ body {
 
 .mode-dropdown button {
     width: 100%;
+    padding: 12px 14px;
+
     border: none;
-    background-color: #f3f1e9;
-    color: #70651f;
+    background-color: var(--group-bg);
+    color: var(--group-text);
+
     font-family: inherit;
     font-size: 21px;
     font-weight: 700;
-    padding: 12px 14px;
     text-align: left;
+
     cursor: pointer;
 }
 
 .mode-dropdown button:hover {
-    background-color: #dedccb;
+    background-color: #DEDCCB;
 }
 
-.menu-button {
-    position: absolute;
-    right: 22px;
-    top: 25px;
-    border: none;
-    background: transparent;
-    color: #70651f;
-    font-size: 38px;
-    line-height: 1;
-    cursor: pointer;
-}
 
-/* ==============================
-   全體模式
-============================== */
+/* =========================================================
+   05. 全體模式
+========================================================= */
 
 .main-content {
     width: 100%;
     padding: 20px 48px 70px;
 }
 
+/* 頂部導覽列 */
+
 .navigation-row {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    width: 100%;
     gap: 30px;
 }
+
+/* 五個分析選單 */
 
 .category-nav {
     display: flex;
@@ -185,49 +474,115 @@ body {
 
 .category-button,
 .profile-category-button {
+    padding: 6px 9px;
+
     border: none;
+    border-radius: 9px;
+
     background: transparent;
-    color: #70651f;
+    color: var(--group-text);
+
     font-family: inherit;
     font-size: 18px;
     font-weight: 700;
     white-space: nowrap;
-    padding: 6px 9px;
+
     cursor: pointer;
-    border-radius: 9px;
 }
 
 .category-button.active,
 .profile-category-button.active {
-    border: 5px solid #b2b193;
     padding: 3px 7px;
-    background-color: #f3f1e9;
+
+    border: 5px solid var(--group-primary);
+    background-color: var(--group-bg);
 }
 
-.search-box {
-    width: 220px;
-    height: 40px;
-    flex-shrink: 0;
-    border-radius: 10px;
-    background-color: #b2b193;
+/* 頁面說明 */
+
+.page-description {
+    margin-top: 8px;
+
+    color: var(--group-text);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* 全體模式右側操作區 */
+
+.group-search-actions {
     display: flex;
     align-items: center;
+
+    gap: 12px;
+    margin-left: auto;
+}
+
+/* 新增長輩資料按鈕 */
+
+.group-add-button {
+    padding: 10px 18px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: var(--group-primary);
+    color: var(--group-text);
+
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.group-add-button:hover {
+    background: #A4A382;
+    transform: translateY(-2px);
+}
+
+.group-add-button:active {
+    transform: translateY(0);
+}
+
+/* 查詢長輩編號 */
+
+.search-box {
+    display: flex;
+    align-items: center;
+
+    width: 220px;
+    height: 40px;
     padding: 0 12px;
+
+    flex-shrink: 0;
+
+    border-radius: 10px;
+    background-color: var(--group-primary);
 }
 
 .search-box input {
     width: 100%;
+
     border: none;
     outline: none;
+
     background: transparent;
-    color: #70651f;
+    color: var(--group-text);
+
     font-family: inherit;
-    font-weight: 700;
     font-size: 14px;
+    font-weight: 700;
 }
 
 .search-box input::placeholder {
-    color: #70651f;
+    color: var(--group-text);
     opacity: 1;
 }
 
@@ -237,41 +592,40 @@ body {
     line-height: 1;
 }
 
-.page-description {
-    margin-top: 8px;
-    color: #70651f;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
+/* 長輩資料卡片 */
 
 .people-grid {
-    width: 100%;
-    margin-top: 14px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    width: 100%;
     gap: 15px;
+    margin-top: 14px;
 }
 
 .person-card {
     height: 220px;
-    border: 9px solid #b2b193;
-    border-radius: 13px;
-    background-color: #f3f1e9;
     padding: 8px 12px;
+
+    border: var(--card-border) solid var(--group-primary);
+    border-radius: var(--card-radius);
+
+    background-color: var(--group-bg);
     overflow: auto;
 }
 
 .person-card h2 {
     margin: 0;
-    color: #70651f;
+
+    color: var(--group-text);
     font-size: 20px;
     font-weight: 700;
 }
 
 .person-data {
     margin-top: 18px;
-    color: #70651f;
+
+    color: var(--group-text);
     font-size: 15px;
     font-weight: 700;
     line-height: 1.7;
@@ -281,9 +635,10 @@ body {
     line-height: 1.7;
 }
 
-/* ==============================
-   單人模式
-============================== */
+
+/* =========================================================
+   06. 單人模式
+========================================================= */
 
 .single-content {
     width: 100%;
@@ -291,45 +646,54 @@ body {
     padding: 0 48px 70px;
 }
 
+/* 查詢與新增長輩畫面 */
+
 .single-panel {
-    width: 100%;
-    padding-top: 105px;
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    width: 100%;
+    padding-top: 105px;
 }
 
 .single-panel h1 {
     margin: 0 0 42px;
-    color: #70651f;
+
+    color: var(--group-text);
     font-size: 42px;
     font-weight: 700;
 }
 
 .single-search-box {
-    width: 385px;
-    height: 50px;
-    background-color: #b2b193;
-    border-radius: 18px;
     display: flex;
     align-items: center;
+
+    width: 385px;
+    height: 50px;
     padding: 0 16px;
+
+    border-radius: 18px;
+    background-color: var(--group-primary);
 }
 
 .single-search-box input {
     flex: 1;
     min-width: 0;
+
     border: none;
     outline: none;
+
     background: transparent;
-    color: #70651f;
+    color: var(--group-text);
+
     font-family: inherit;
     font-size: 20px;
     font-weight: 700;
 }
 
 .single-search-box input::placeholder {
-    color: #70651f;
+    color: var(--group-text);
     opacity: 1;
 }
 
@@ -337,53 +701,91 @@ body {
     width: 46px;
     height: 46px;
     flex-shrink: 0;
+
     border: none;
     background: transparent;
-    color: #70651f;
+    color: var(--group-text);
+
     font-size: 32px;
     cursor: pointer;
 }
 
 .single-text-button {
     margin-top: 22px;
+
     border: none;
     background: transparent;
-    color: #70651f;
+    color: var(--group-text);
+
     font-family: inherit;
     font-size: 22px;
     font-weight: 700;
+
     cursor: pointer;
 }
 
-/* 個人資料頁 */
+
+/* =========================================================
+   單人模式：玩家資料頁面
+
+   修正重點：
+   五個分析選單與刪除、返回查詢
+   使用同一個 navigation-row
+========================================================= */
 
 .single-profile {
     width: 100%;
     padding-top: 25px;
 }
 
-.profile-top-row {
-    width: 100%;
+/* 上方整排 */
+
+.profile-navigation-row {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: -10px;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    min-height: 48px;
+    gap: 24px;
 }
+
+/* 左側五個選單 */
+
+.profile-navigation-row .category-nav {
+    display: flex;
+    align-items: center;
+
+    gap: 20px;
+    min-width: 0;
+}
+
+/* 右側操作按鈕 */
 
 .profile-action-buttons {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+
     gap: 12px;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .back-search-button {
+    padding: 12px 20px;
+
     border: none;
     border-radius: 10px;
-    padding: 12px 20px;
-    background-color: #b2b193;
-    color: #70651f;
+
+    background-color: var(--group-primary);
+    color: var(--group-text);
+
     font-family: inherit;
     font-size: 16px;
     font-weight: 700;
+    white-space: nowrap;
+
     cursor: pointer;
 }
 
@@ -391,64 +793,209 @@ body {
     opacity: 0.85;
 }
 
+/* 玩家資料內容 */
+
 .profile-data-area {
     width: 100%;
-    margin-top: 18px;
     min-height: 0;
+    margin-top: 18px;
+    padding: 0;
+
     border: none;
     border-radius: 0;
     background: transparent;
-    padding: 0;
 }
 
 .profile-content {
+    display: flex;
+    flex-direction: column;
+
     width: 100%;
-    color: #70651f;
+    gap: 22px;
+
+    color: var(--group-text);
     font-size: 18px;
     font-weight: 700;
     line-height: 1.7;
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
 }
+
+/* 單局遊玩紀錄 */
 
 .profile-session-record {
     width: 100%;
-    border: 9px solid #b2b193;
-    border-radius: 13px;
-    background-color: #f3f1e9;
-    padding: 25px 30px;
     min-height: 300px;
+    padding: 25px 30px;
+
+    border: var(--card-border) solid var(--group-primary);
+    border-radius: var(--card-radius);
+
+    background-color: var(--group-bg);
 }
 
 .profile-session-title {
     margin: 0 0 5px;
-    color: #70651f;
+
+    color: var(--group-text);
     font-size: 20px;
     font-weight: 700;
 }
 
 .profile-session-record .record-detail {
-    color: #70651f;
+    color: var(--group-text);
     font-size: 18px;
     font-weight: 700;
     line-height: 1.7;
 }
 
-/* ==============================
-   刪除確認視窗
-============================== */
+
+/* =========================================================
+   07. 單人模式配色
+========================================================= */
+
+body.single-mode-active {
+    background-color: var(--single-bg);
+    color: var(--single-text);
+}
+
+/* 頂部 */
+
+body.single-mode-active .top-header {
+    background-color: var(--single-primary);
+}
+
+body.single-mode-active .date-arrow,
+body.single-mode-active .menu-button {
+    color: var(--single-text);
+}
+
+body.single-mode-active .date-card {
+    background-color: var(--single-bg);
+    color: var(--single-text);
+}
+
+body.single-mode-active .year,
+body.single-mode-active .date {
+    color: var(--single-text);
+}
+
+/* 模式切換 */
+
+body.single-mode-active .mode-button {
+    background-color: var(--single-bg);
+    color: var(--single-text);
+}
+
+body.single-mode-active .mode-subtitle {
+    color: var(--single-text);
+}
+
+body.single-mode-active .mode-dropdown {
+    background-color: var(--single-bg);
+    border-color: var(--single-primary);
+}
+
+body.single-mode-active .mode-dropdown button {
+    background-color: var(--single-bg);
+    color: var(--single-text);
+}
+
+body.single-mode-active .mode-dropdown button:hover {
+    background-color: #D3D5E0;
+}
+
+/* 單人頁面 */
+
+body.single-mode-active .single-content {
+    background-color: var(--single-bg);
+    color: var(--single-text);
+}
+
+body.single-mode-active .single-panel h1 {
+    color: var(--single-text);
+}
+
+body.single-mode-active .single-search-box {
+    background-color: var(--single-primary);
+}
+
+body.single-mode-active .single-search-box input,
+body.single-mode-active .single-search-box input::placeholder,
+body.single-mode-active .single-search-box button {
+    color: var(--single-text);
+}
+
+body.single-mode-active .single-text-button {
+    color: var(--single-text);
+}
+
+/* 五個分析選單 */
+
+body.single-mode-active .profile-category-button {
+    color: var(--single-text);
+}
+
+body.single-mode-active .profile-category-button.active {
+    border-color: var(--single-primary);
+    background-color: var(--single-bg);
+}
+
+/* 說明文字 */
+
+body.single-mode-active .page-description {
+    color: var(--single-text);
+}
+
+/* 操作按鈕 */
+
+body.single-mode-active .back-search-button {
+    background-color: var(--single-primary);
+    color: var(--single-text);
+}
+
+/* 玩家紀錄 */
+
+body.single-mode-active .profile-content {
+    color: var(--single-text);
+}
+
+body.single-mode-active .profile-session-record {
+    border-color: var(--single-primary);
+    background-color: var(--single-bg);
+}
+
+body.single-mode-active .profile-session-title,
+body.single-mode-active .profile-session-record .record-detail {
+    color: var(--single-text);
+}
+
+/* 單人模式日曆 */
+
+body.single-mode-active .calendar-wrapper {
+    --calendar-bg: #878DA9;
+    --calendar-text: #E7E8EF;
+    --calendar-selected: #525161;
+    --calendar-selected-text: #FFFFFF;
+    --calendar-border: #D3D5E0;
+}
+
+
+/* =========================================================
+   08. 刪除確認視窗
+========================================================= */
 
 .delete-modal-overlay {
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
+    z-index: 99999;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    width: 100vw;
+    height: 100vh;
+
     background-color: rgba(243, 241, 233, 0.82);
-    z-index: 99999;
 }
 
 .delete-modal-overlay.hidden {
@@ -456,23 +1003,26 @@ body {
 }
 
 .delete-modal {
-    width: 390px;
-    min-height: 215px;
-    background-color: #b2b193;
-    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
+    width: 390px;
+    min-height: 215px;
     padding: 35px 35px 30px;
+
+    border-radius: 8px;
+    background-color: var(--group-primary);
 }
 
 .delete-modal-text {
-    color: #70651f;
+    margin-bottom: 45px;
+
+    color: var(--group-text);
     font-size: 25px;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 45px;
 }
 
 .delete-modal-buttons {
@@ -485,13 +1035,17 @@ body {
 .delete-modal-button {
     width: 122px;
     height: 44px;
+
     border: none;
     border-radius: 9px;
-    background-color: #f3f1e9;
-    color: #70651f;
+
+    background-color: var(--group-bg);
+    color: var(--group-text);
+
     font-family: inherit;
     font-size: 22px;
     font-weight: 700;
+
     cursor: pointer;
 }
 
@@ -499,139 +1053,33 @@ body {
     opacity: 0.85;
 }
 
-/* ==============================
-   單人模式專屬配色
-============================== */
-
-body.single-mode-active {
-    background-color: #E7E8EF;
-    color: #525161;
-}
-
-body.single-mode-active .top-header {
-    background-color: #878DA9;
-}
-
-body.single-mode-active .date-arrow {
-    color: #525161;
-}
-
-body.single-mode-active .date-card {
-    background-color: #E7E8EF;
-    color: #525161;
-}
-
-body.single-mode-active .year,
-body.single-mode-active .date {
-    color: #525161;
-}
-
-body.single-mode-active .mode-button {
-    background-color: #E7E8EF;
-    color: #525161;
-}
-
-body.single-mode-active .mode-subtitle {
-    color: #525161;
-}
-
-body.single-mode-active .mode-dropdown {
-    background-color: #E7E8EF;
-    border-color: #878DA9;
-}
-
-body.single-mode-active .mode-dropdown button {
-    background-color: #E7E8EF;
-    color: #525161;
-}
-
-body.single-mode-active .mode-dropdown button:hover {
-    background-color: #D3D5E0;
-}
-
-body.single-mode-active .menu-button {
-    color: #525161;
-}
-
-body.single-mode-active .single-content {
-    background-color: #E7E8EF;
-    color: #525161;
-}
-
-body.single-mode-active .single-panel h1 {
-    color: #525161;
-}
-
-body.single-mode-active .single-search-box {
-    background-color: #878DA9;
-}
-
-body.single-mode-active .single-search-box input,
-body.single-mode-active .single-search-box input::placeholder,
-body.single-mode-active .single-search-box button {
-    color: #525161;
-}
-
-body.single-mode-active .single-text-button {
-    color: #525161;
-}
-
-body.single-mode-active .profile-category-button {
-    color: #525161;
-}
-
-body.single-mode-active .profile-category-button.active {
-    border-color: #878DA9;
-    background-color: #E7E8EF;
-}
-
-body.single-mode-active .page-description {
-    color: #525161;
-}
-
-body.single-mode-active .back-search-button {
-    background-color: #878DA9;
-    color: #525161;
-}
-
-body.single-mode-active .profile-content {
-    color: #525161;
-}
-
-body.single-mode-active .profile-session-record {
-    border-color: #878DA9;
-    background-color: #E7E8EF;
-}
-
-body.single-mode-active .profile-session-title,
-body.single-mode-active .profile-session-record .record-detail {
-    color: #525161;
-}
+/* 單人模式確認視窗 */
 
 body.single-mode-active .delete-modal-overlay {
     background-color: rgba(231, 232, 239, 0.82);
 }
 
 body.single-mode-active .delete-modal {
-    background-color: #878DA9;
+    background-color: var(--single-primary);
 }
 
 body.single-mode-active .delete-modal-text {
-    color: #525161;
+    color: var(--single-text);
 }
 
 body.single-mode-active .delete-modal-button {
-    background-color: #E7E8EF;
-    color: #525161;
+    background-color: var(--single-bg);
+    color: var(--single-text);
 }
 
-/* ==============================
-   新增：總成功率環形圖
-============================== */
+
+/* =========================================================
+   09. 總成功率圓環圖
+========================================================= */
 
 .success-record-time {
-    font-size: 17px;
     margin-bottom: 18px;
+    font-size: 17px;
 }
 
 .success-chart-layout {
@@ -639,29 +1087,36 @@ body.single-mode-active .delete-modal-button {
     align-items: center;
     justify-content: flex-start;
     flex-wrap: wrap;
+
     gap: clamp(25px, 7vw, 100px);
     padding: 8px 12px 14px;
 }
 
+/* 圓環 */
+
 .success-donut {
+    display: grid;
+    place-items: center;
+
     width: 220px;
     height: 220px;
     flex: 0 0 220px;
+
     border-radius: 50%;
-    display: grid;
-    place-items: center;
 }
 
 .success-donut-center {
-    width: 158px;
-    height: 158px;
-    border-radius: 50%;
-    background: #E7E8EF;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    color: #525161;
+    justify-content: center;
+
+    width: 158px;
+    height: 158px;
+
+    border-radius: 50%;
+    background: var(--single-bg);
+    color: var(--single-text);
 }
 
 .success-donut-rate {
@@ -674,19 +1129,24 @@ body.single-mode-active .delete-modal-button {
     font-size: 17px;
 }
 
+/* 成功率統計 */
+
 .success-stat-list {
-    width: min(100%, 340px);
     display: flex;
     flex-direction: column;
+
+    width: min(100%, 340px);
     gap: 17px;
 }
 
 .success-stat {
     display: flex;
     align-items: center;
+
     gap: 12px;
+
+    color: var(--single-text);
     font-size: 19px;
-    color: #525161;
 }
 
 .success-stat strong {
@@ -698,28 +1158,1144 @@ body.single-mode-active .delete-modal-button {
     width: 15px;
     height: 15px;
     flex: 0 0 15px;
+
     border-radius: 4px;
 }
 
 .success-dot-completed {
-    background-color: #686F98;
+    background-color: var(--single-accent);
 }
 
 .success-dot-failed {
-    background-color: #C9CBD9;
+    background-color: var(--single-line);
 }
 
 .success-stat-total {
-    border-top: 2px solid #C9CBD9;
     padding-top: 15px;
     padding-left: 27px;
+
+    border-top: 2px solid var(--single-line);
 }
 
-/* ==============================
-   響應式
-============================== */
+
+/* =========================================================
+   10. 視覺資訊圖表
+========================================================= */
+
+.visual-chart-layout {
+    width: 100%;
+    padding: 15px 12px 5px;
+}
+
+.visual-chart-heading {
+    margin-bottom: 18px;
+
+    color: var(--single-text);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* 圖表外框 */
+
+.visual-chart {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+    height: 290px;
+    gap: 10px;
+}
+
+/* Y 軸 */
+
+.visual-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    width: 52px;
+    flex-shrink: 0;
+    padding-bottom: 35px;
+
+    color: var(--single-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* 圖表繪製區 */
+
+.visual-plot {
+    position: relative;
+
+    flex: 1;
+    min-width: 0;
+    height: 255px;
+
+    border-left: 2px solid #A9ADBF;
+    border-bottom: 2px solid #A9ADBF;
+}
+
+/* 背景格線 */
+
+.visual-gridlines {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    pointer-events: none;
+}
+
+.visual-gridline {
+    width: 100%;
+    border-top: 1px dashed var(--single-line);
+}
+
+/* 長條圖 */
+
+.visual-bars {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.visual-bar-item {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+
+    flex: 1;
+    min-width: 45px;
+    max-width: 120px;
+    height: 100%;
+}
+
+.visual-bar {
+    width: 65%;
+    max-width: 75px;
+    height: var(--bar-height);
+    min-height: 2px;
+
+    border-radius: 8px 8px 0 0;
+    background-color: var(--single-primary);
+}
+
+/* 數值 */
+
+.visual-bar-value {
+    position: absolute;
+    bottom: calc(var(--bar-height) + 7px);
+
+    color: var(--single-text);
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* X 軸標籤 */
+
+.visual-bar-label {
+    position: absolute;
+    top: calc(100% + 10px);
+
+    color: var(--single-text);
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* 水平捲動 */
+
+.visual-chart-scroll {
+    width: 100%;
+    padding-bottom: 35px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.visual-chart-scroll .visual-chart {
+    min-width: 500px;
+}
+
+/* 平均值 */
+
+.visual-average {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 18px;
+
+    border-top: 2px solid var(--single-line);
+
+    color: var(--single-text);
+    font-size: 19px;
+}
+
+.visual-average strong {
+    color: var(--single-accent);
+    font-size: 29px;
+}
+
+.visual-empty {
+    padding: 35px 0;
+
+    color: var(--single-muted);
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   11. 記憶力與聽力資訊圖表
+========================================================= */
+
+/* 記憶力 */
+
+.memory-chart-layout {
+    padding: 20px 12px;
+    color: var(--single-text);
+}
+
+.memory-chart-heading {
+    margin-bottom: 22px;
+    font-size: 18px;
+}
+
+.memory-count {
+    display: flex;
+    align-items: baseline;
+
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.memory-count strong {
+    color: var(--single-accent);
+    font-size: 48px;
+    line-height: 1.2;
+}
+
+.memory-count span {
+    font-size: 19px;
+}
+
+/* 記憶力進度條 */
+
+.memory-bar-track {
+    width: 100%;
+    max-width: 680px;
+    height: 34px;
+
+    border-radius: 12px;
+    background: var(--single-line);
+    overflow: hidden;
+}
+
+.memory-bar-fill {
+    height: 100%;
+
+    border-radius: 12px;
+    background: var(--single-accent);
+
+    transition: width 0.4s ease;
+}
+
+.memory-scale {
+    display: flex;
+    justify-content: space-between;
+
+    max-width: 680px;
+    margin-top: 9px;
+
+    color: var(--single-muted);
+    font-size: 14px;
+}
+
+.memory-note {
+    margin-top: 18px;
+
+    color: var(--single-muted);
+    font-size: 15px;
+}
+
+/* 聽力資訊 */
+
+.hearing-chart-layout {
+    width: 100%;
+    padding: 15px 12px 5px;
+}
+
+.hearing-chart-layout .visual-bar {
+    background-color: var(--single-accent);
+}
+
+.hearing-chart-layout .visual-average strong {
+    color: var(--single-accent);
+}
+
+
+/* =========================================================
+   12. 基本分析圖表
+========================================================= */
+
+.analysis-layout {
+    padding: 14px 10px 10px;
+    color: var(--single-text);
+}
+
+.analysis-heading {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* 指標卡片 */
+
+.analysis-metric {
+    min-width: 0;
+    padding: 22px 24px;
+
+    border: 2px solid var(--single-line);
+    border-radius: 14px;
+
+    background: #F0F0F5;
+}
+
+.analysis-metric-title {
+    margin-bottom: 12px;
+
+    color: var(--single-muted);
+    font-size: 16px;
+}
+
+.analysis-metric-value {
+    color: var(--single-text);
+    font-size: 32px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.analysis-metric-value small {
+    font-size: 17px;
+}
+
+/* 迷你進度條 */
+
+.analysis-mini-track {
+    height: 12px;
+    margin-top: 16px;
+
+    border-radius: 10px;
+    background: var(--single-line);
+    overflow: hidden;
+}
+
+.analysis-mini-fill {
+    height: 100%;
+
+    border-radius: 10px;
+    background: var(--single-accent);
+}
+
+/* 分析摘要 */
+
+.analysis-summary {
+    margin-top: 20px;
+    padding: 18px 24px;
+
+    border-radius: 12px;
+    background: #D9DBE7;
+
+    color: var(--single-text);
+    font-size: 17px;
+    line-height: 1.9;
+}
+
+.analysis-summary-title {
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.analysis-summary p {
+    margin: 3px 0;
+}
+
+
+/* =========================================================
+   13. 全體模式：總分析儀表板
+========================================================= */
+
+.people-grid.overview-mode {
+    display: block;
+}
+
+.overview-dashboard {
+    width: 100%;
+    color: var(--group-text);
+}
+
+/* 總分析標題 */
+
+.overview-head {
+    margin: 6px 0 18px;
+}
+
+.overview-head h2 {
+    margin: 0 0 5px;
+    font-size: 25px;
+}
+
+.overview-head p,
+.overview-panel p {
+    margin: 5px 0 14px;
+
+    color: #817E68;
+    font-size: 13px;
+}
+
+/* 頂部四個指標 */
+
+.overview-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.overview-metric {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+    padding: 20px 15px;
+
+    border: var(--card-border) solid var(--group-primary);
+    border-radius: var(--card-radius);
+
+    background: var(--group-bg);
+    box-shadow: none;
+}
+
+.overview-metric span {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.overview-metric strong {
+    font-size: clamp(23px, 2.7vw, 36px);
+    letter-spacing: -0.8px;
+}
+
+.overview-metric small {
+    color: #85816B;
+    font-size: 12px;
+}
+
+/* 分析區塊 */
+
+.overview-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.overview-panel {
+    min-width: 0;
+    padding: 22px;
+
+    border: var(--card-border) solid var(--group-primary);
+    border-radius: var(--card-radius);
+
+    background: var(--group-bg);
+    box-shadow: none;
+}
+
+.overview-panel h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+.overview-panel h4 {
+    margin: 0 0 6px;
+    font-size: 14px;
+}
+
+/* 大型數值 */
+
+.overview-large {
+    margin: 16px 0;
+    font-size: 39px;
+    font-weight: 800;
+}
+
+.overview-large small {
+    font-size: 20px;
+}
+
+/* 進度條 */
+
+.overview-progress,
+.overview-bar-track {
+    height: 12px;
+
+    border-radius: 999px;
+    background: #E9E7DC;
+    overflow: hidden;
+}
+
+.overview-progress > div,
+.overview-bar-track > div {
+    height: 100%;
+
+    border-radius: inherit;
+    background: #92936C;
+}
+
+/* 統計資料 */
+
+.overview-facts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.overview-facts > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.overview-facts strong {
+    font-size: 28px;
+}
+
+.overview-facts span {
+    color: #817E68;
+    font-size: 12px;
+}
+
+/* 分類長條圖 */
+
+.overview-bar-row {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr) 72px;
+    align-items: center;
+
+    gap: 12px;
+    margin: 15px 0;
+
+    font-size: 13px;
+}
+
+.overview-bar-row strong {
+    font-size: 13px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* 歷史趨勢 */
+
+.overview-history-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.overview-range {
+    display: flex;
+
+    gap: 3px;
+    padding: 4px;
+
+    border-radius: 9px;
+    background: #E9E7DC;
+}
+
+.overview-range button {
+    padding: 8px 13px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    color: var(--group-text);
+
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.overview-range button.active {
+    background: var(--group-primary);
+}
+
+.overview-trend-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.overview-trend-grid > div {
+    min-width: 0;
+    padding: 13px;
+
+    border: 1px solid #E6E3D6;
+    border-radius: 12px;
+}
+
+.overview-line-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* 空資料提示 */
+
+.overview-empty,
+.overview-loading {
+    padding: 30px 12px;
+
+    color: #817E68;
+    text-align: center;
+}
+
+.overview-footnote {
+    margin: 14px 2px;
+
+    color: #817E68;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   14. 單人模式：總分析儀表板
+========================================================= */
+
+.single-analysis-dashboard {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+
+    color: var(--single-text);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* 標題與說明 */
+
+.single-analysis-intro h2 {
+    margin: 0 0 4px;
+    font-size: 24px;
+}
+
+.single-analysis-intro p,
+.single-section-heading p {
+    margin: 0;
+
+    color: var(--single-muted);
+    font-size: 14px;
+}
+
+/* ---------------------------------------------------------
+   指標卡片：原始版本
+--------------------------------------------------------- */
+
+.single-analysis-cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.single-analysis-card {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 8px;
+    padding: 19px 16px;
+
+    border: var(--card-border) solid var(--single-primary);
+    border-radius: var(--card-radius);
+
+    background: var(--single-bg);
+    box-shadow: none;
+}
+
+.single-analysis-card span {
+    font-size: 14px;
+}
+
+.single-analysis-card strong {
+    font-size: clamp(22px, 2.5vw, 32px);
+    overflow-wrap: anywhere;
+}
+
+.single-analysis-card small {
+    color: var(--single-muted);
+    font-size: 12px;
+}
+
+/* ---------------------------------------------------------
+   指標卡片：目前 JS 使用的版本
+--------------------------------------------------------- */
+
+.single-analysis-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.single-analysis-metric {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 9px;
+    padding: 18px 16px;
+
+    border: var(--card-border) solid var(--single-primary);
+    border-radius: var(--card-radius);
+
+    background: var(--single-bg);
+    box-shadow: none;
+}
+
+.single-analysis-metric span {
+    font-size: 14px;
+}
+
+.single-analysis-metric strong {
+    font-size: clamp(22px, 2.5vw, 32px);
+    overflow-wrap: anywhere;
+}
+
+.single-analysis-metric small {
+    color: var(--single-muted);
+    font-size: 12px;
+}
+
+/* ---------------------------------------------------------
+   分析區塊
+--------------------------------------------------------- */
+
+.single-analysis-section {
+    min-width: 0;
+    padding: 22px;
+
+    border: var(--card-border) solid var(--single-primary);
+    border-radius: var(--card-radius);
+
+    background: var(--single-bg);
+    box-shadow: none;
+}
+
+/* 分析區塊標題 */
+
+.single-section-heading,
+.single-analysis-section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.single-section-heading h3,
+.single-analysis-section-heading h3 {
+    margin: 0 0 5px;
+    font-size: 20px;
+}
+
+.single-analysis-section-heading p {
+    margin: 0;
+
+    color: var(--single-muted);
+    font-size: 14px;
+}
+
+/* ---------------------------------------------------------
+   四項分析統計
+--------------------------------------------------------- */
+
+.single-analysis-facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.single-analysis-facts > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+    padding: 12px;
+
+    text-align: center;
+}
+
+.single-analysis-facts strong {
+    font-size: 26px;
+}
+
+.single-analysis-facts span {
+    color: var(--single-muted);
+    font-size: 13px;
+}
+
+/* ---------------------------------------------------------
+   分析切換按鈕
+--------------------------------------------------------- */
+
+.single-segments {
+    display: flex;
+    flex-wrap: wrap;
+
+    width: fit-content;
+    gap: 5px;
+    padding: 5px;
+    margin-bottom: 16px;
+
+    border-radius: 10px;
+    background: #E3E4ED;
+}
+
+.single-section-heading .single-segments {
+    margin-bottom: 0;
+}
+
+.single-segments button {
+    padding: 8px 13px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    color: var(--single-text);
+
+    font: inherit;
+    font-size: 13px;
+
+    cursor: pointer;
+}
+
+.single-segments button.active {
+    background: var(--single-primary);
+    color: #FFFFFF;
+}
+
+/* 新版分析頁籤與時間區間 */
+
+.single-analysis-tabs,
+.single-analysis-period {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.single-analysis-tabs button,
+.single-analysis-period button {
+    padding: 9px 14px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #D3D5E0;
+    color: var(--single-text);
+
+    font: inherit;
+    font-size: 13px;
+
+    cursor: pointer;
+}
+
+.single-analysis-tabs button.active,
+.single-analysis-period button.active {
+    background: var(--single-primary);
+    color: #FFFFFF;
+}
+
+/* ---------------------------------------------------------
+   趨勢折線圖
+--------------------------------------------------------- */
+
+.single-chart-scroll,
+.single-analysis-chart-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.single-chart-scroll {
+    padding: 0;
+}
+
+.single-analysis-chart-scroll {
+    padding: 10px 0;
+}
+
+.single-line-chart {
+    display: block;
+
+    width: 100%;
+    min-width: 520px;
+    height: auto;
+}
+
+.single-analysis-line-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.single-analysis-chart-note,
+.single-analysis-disclaimer {
+    color: var(--single-muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* ---------------------------------------------------------
+   首次與最近一次比較
+--------------------------------------------------------- */
+
+.single-first-last {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 12px;
+    margin: 12px 0 22px;
+}
+
+.single-first-last > div {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 5px;
+    padding: 15px;
+
+    border-radius: 11px;
+    background: var(--single-bg);
+}
+
+.single-first-last small {
+    color: var(--single-muted);
+    font-size: 13px;
+}
+
+.single-first-last strong {
+    font-size: 21px;
+    overflow-wrap: anywhere;
+}
+
+.single-first-last .single-comparison-text {
+    font-size: 14px;
+}
+
+/* ---------------------------------------------------------
+   進步情況摘要
+--------------------------------------------------------- */
+
+.single-analysis-progress-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    gap: 12px;
+    margin: 18px 0;
+    padding: 16px;
+
+    border-radius: 10px;
+    background: #D9DBE7;
+}
+
+/* ---------------------------------------------------------
+   遊玩紀錄列表
+--------------------------------------------------------- */
+
+.single-analysis-session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.single-analysis-session-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr;
+    align-items: center;
+
+    gap: 12px;
+    padding: 15px;
+
+    border-radius: 10px;
+    background: #D9DBE7;
+}
+
+.single-analysis-session-name {
+    display: flex;
+    flex-direction: column;
+}
+
+.single-analysis-session-name small {
+    color: var(--single-muted);
+}
+
+/* 進步、退步與持平 */
+
+.single-analysis-change {
+    font-size: 13px;
+}
+
+.single-analysis-change.improved,
+.single-better {
+    color: #367A5A;
+}
+
+.single-analysis-change.declined,
+.single-worse {
+    color: #B15A60;
+}
+
+.single-analysis-change.neutral,
+.single-neutral {
+    color: var(--single-muted);
+}
+
+/* ---------------------------------------------------------
+   資料表格：原始版本
+--------------------------------------------------------- */
+
+.single-table-scroll {
+    overflow-x: auto;
+}
+
+.single-data-table {
+    width: 100%;
+    min-width: 510px;
+
+    border-collapse: collapse;
+
+    font-size: 14px;
+    text-align: left;
+}
+
+.single-data-table th {
+    background: var(--single-bg);
+    color: var(--single-muted);
+}
+
+.single-data-table th,
+.single-data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #D7D9E5;
+}
+
+.single-data-table td small {
+    color: var(--single-muted);
+}
+
+/* ---------------------------------------------------------
+   資料表格：新版
+--------------------------------------------------------- */
+
+.single-analysis-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.single-analysis-table {
+    width: 100%;
+    min-width: 780px;
+
+    border-collapse: collapse;
+
+    font-size: 14px;
+    text-align: left;
+}
+
+.single-analysis-table th,
+.single-analysis-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--single-line);
+}
+
+.single-analysis-table thead {
+    background: #D9DBE7;
+}
+
+.single-analysis-table td strong,
+.single-analysis-table td small {
+    display: block;
+}
+
+/* ---------------------------------------------------------
+   提示文字與空資料狀態
+--------------------------------------------------------- */
+
+.single-history-note,
+.single-analysis-footnote {
+    color: var(--single-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.single-history-title {
+    margin: 25px 0 6px;
+    font-size: 16px;
+}
+
+.single-no-data,
+.single-analysis-empty {
+    padding: 25px 10px;
+
+    color: var(--single-muted);
+    text-align: center;
+}
+
+
+/* =========================================================
+   15. 響應式排版
+========================================================= */
+
+/* ---------------------------------------------------------
+   1000px 以下
+--------------------------------------------------------- */
 
 @media (max-width: 1000px) {
+
     .top-header {
         padding-left: 25px;
         padding-right: 25px;
@@ -739,9 +2315,55 @@ body.single-mode-active .delete-modal-button {
     .profile-category-button {
         font-size: 15px;
     }
+
+    /* 單人模式導覽列 */
+
+    .profile-navigation-row {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .profile-navigation-row .category-nav {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .profile-action-buttons {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    /* 單人總分析 */
+
+    .single-analysis-cards,
+    .single-analysis-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
 }
 
+
+/* ---------------------------------------------------------
+   950px 以下
+--------------------------------------------------------- */
+
+@media (max-width: 950px) {
+
+    .overview-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   720px 以下
+--------------------------------------------------------- */
+
 @media (max-width: 720px) {
+
+    /* 頂部 */
+
     .top-header {
         height: auto;
         flex-wrap: wrap;
@@ -752,6 +2374,8 @@ body.single-mode-active .delete-modal-button {
         margin-left: 0;
     }
 
+    /* 導覽列 */
+
     .navigation-row {
         flex-wrap: wrap;
     }
@@ -760,22 +2384,45 @@ body.single-mode-active .delete-modal-button {
         flex-wrap: wrap;
     }
 
+    .profile-navigation-row {
+        align-items: flex-start;
+    }
+
+    /* 全體模式 */
+
     .people-grid {
         grid-template-columns: 1fr;
     }
+
+    /* 單人查詢 */
 
     .single-search-box {
         width: 100%;
     }
 
+    /* 日期選擇器 */
+
+    .custom-calendar {
+        left: 0;
+        transform: none;
+
+        width: min(322px, calc(100vw - 24px));
+    }
+
+    /* 刪除視窗 */
+
     .delete-modal {
         width: calc(100% - 40px);
     }
 
+    /* 玩家紀錄 */
+
     .profile-session-record {
-        padding: 20px;
         min-height: 250px;
+        padding: 20px;
     }
+
+    /* 成功率圓環圖 */
 
     .success-chart-layout {
         justify-content: center;
@@ -797,154 +2444,9 @@ body.single-mode-active .delete-modal-button {
     .success-donut-rate {
         font-size: 32px;
     }
-}
 
+    /* 視覺資訊 */
 
-/* ==========================================
-   單人模式：視覺資訊長條圖
-========================================== */
-
-.visual-chart-layout {
-    width: 100%;
-    padding: 15px 12px 5px;
-}
-
-.visual-chart-heading {
-    font-size: 17px;
-    font-weight: 700;
-    color: #525161;
-    margin-bottom: 18px;
-}
-
-.visual-chart {
-    width: 100%;
-    height: 290px;
-    display: flex;
-    align-items: stretch;
-    gap: 10px;
-}
-
-.visual-y-axis {
-    width: 52px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding-bottom: 35px;
-    color: #77788C;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.visual-plot {
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    height: 255px;
-    border-left: 2px solid #A9ADBF;
-    border-bottom: 2px solid #A9ADBF;
-}
-
-.visual-gridlines {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    pointer-events: none;
-}
-
-.visual-gridline {
-    width: 100%;
-    border-top: 1px dashed #C9CBD9;
-}
-
-.visual-bars {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    gap: 12px;
-    padding: 0 16px;
-}
-
-.visual-bar-item {
-    height: 100%;
-    min-width: 45px;
-    flex: 1;
-    max-width: 120px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.visual-bar-value {
-    position: absolute;
-    bottom: calc(var(--bar-height) + 7px);
-    font-size: 15px;
-    font-weight: 700;
-    color: #525161;
-    white-space: nowrap;
-}
-
-.visual-bar {
-    width: 65%;
-    max-width: 75px;
-    height: var(--bar-height);
-    min-height: 2px;
-    background-color: #878DA9;
-    border-radius: 8px 8px 0 0;
-}
-
-.visual-bar-label {
-    position: absolute;
-    top: calc(100% + 10px);
-    font-size: 14px;
-    font-weight: 700;
-    color: #525161;
-    white-space: nowrap;
-}
-
-.visual-chart-scroll {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 35px;
-}
-
-.visual-chart-scroll .visual-chart {
-    min-width: 500px;
-}
-
-.visual-average {
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 2px solid #C9CBD9;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    color: #525161;
-    font-size: 19px;
-}
-
-.visual-average strong {
-    font-size: 29px;
-    color: #686F98;
-}
-
-.visual-empty {
-    color: #77788C;
-    font-size: 17px;
-    padding: 35px 0;
-}
-
-@media (max-width: 720px) {
     .visual-chart-layout {
         padding-left: 0;
         padding-right: 0;
@@ -953,171 +2455,9 @@ body.single-mode-active .delete-modal-button {
     .visual-average strong {
         font-size: 24px;
     }
-}
 
+    /* 記憶力、聽力與基本分析 */
 
-/* ==========================================
-   記憶力：提示次數圖表
-========================================== */
-
-.memory-chart-layout {
-    padding: 20px 12px;
-    color: #525161;
-}
-
-.memory-chart-heading {
-    font-size: 18px;
-    margin-bottom: 22px;
-}
-
-.memory-count {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.memory-count strong {
-    font-size: 48px;
-    color: #686F98;
-    line-height: 1.2;
-}
-
-.memory-count span {
-    font-size: 19px;
-}
-
-.memory-bar-track {
-    width: 100%;
-    max-width: 680px;
-    height: 34px;
-    border-radius: 12px;
-    background: #C9CBD9;
-    overflow: hidden;
-}
-
-.memory-bar-fill {
-    height: 100%;
-    border-radius: 12px;
-    background: #686F98;
-    transition: width .4s ease;
-}
-
-.memory-scale {
-    max-width: 680px;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 9px;
-    font-size: 14px;
-    color: #77788C;
-}
-
-.memory-note {
-    margin-top: 18px;
-    font-size: 15px;
-    color: #77788C;
-}
-
-/* ==========================================
-   聽力資訊：長條圖
-========================================== */
-
-.hearing-chart-layout {
-    width: 100%;
-    padding: 15px 12px 5px;
-}
-
-.hearing-chart-layout .visual-bar {
-    background-color: #686F98;
-}
-
-.hearing-chart-layout .visual-average strong {
-    color: #686F98;
-}
-
-/* ==========================================
-   總分析：單局綜合數據
-========================================== */
-
-.analysis-layout {
-    padding: 14px 10px 10px;
-    color: #525161;
-}
-
-.analysis-heading {
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.analysis-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.analysis-metric {
-    min-width: 0;
-    padding: 22px 24px;
-    border: 2px solid #C9CBD9;
-    border-radius: 14px;
-    background: #F0F0F5;
-}
-
-.analysis-metric-title {
-    font-size: 16px;
-    color: #77788C;
-    margin-bottom: 12px;
-}
-
-.analysis-metric-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: #525161;
-    overflow-wrap: anywhere;
-}
-
-.analysis-metric-value small {
-    font-size: 17px;
-}
-
-.analysis-mini-track {
-    height: 12px;
-    margin-top: 16px;
-    border-radius: 10px;
-    background: #C9CBD9;
-    overflow: hidden;
-}
-
-.analysis-mini-fill {
-    height: 100%;
-    background: #686F98;
-    border-radius: 10px;
-}
-
-.analysis-summary {
-    margin-top: 20px;
-    padding: 18px 24px;
-    border-radius: 12px;
-    background: #D9DBE7;
-    color: #525161;
-    font-size: 17px;
-    line-height: 1.9;
-}
-
-.analysis-summary-title {
-    font-size: 18px;
-    margin-bottom: 8px;
-}
-
-.analysis-summary p {
-    margin: 3px 0;
-}
-
-/* ==========================================
-   手機與平板
-========================================== */
-
-@media (max-width: 720px) {
     .memory-chart-layout,
     .hearing-chart-layout,
     .analysis-layout {
@@ -1140,4 +2480,72 @@ body.single-mode-active .delete-modal-button {
     .analysis-summary {
         padding: 16px;
     }
+
 }
+
+
+/* ---------------------------------------------------------
+   650px 以下
+--------------------------------------------------------- */
+
+@media (max-width: 650px) {
+
+    /* 全體模式操作區 */
+
+    .group-search-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        margin-left: 0;
+    }
+
+    /* 全體總分析 */
+
+    .overview-section-grid,
+    .overview-trend-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-panel {
+        padding: 15px;
+    }
+
+    .overview-metric {
+        padding: 15px 12px;
+    }
+
+    .overview-bar-row {
+        grid-template-columns: 75px minmax(0, 1fr) 65px;
+        gap: 7px;
+    }
+
+    /* 單人總分析 */
+
+    .single-analysis-section {
+        padding: 15px;
+    }
+
+    .single-first-last {
+        grid-template-columns: 1fr;
+    }
+
+    .single-analysis-card {
+        padding: 15px 12px;
+    }
+
+    .single-analysis-facts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .single-analysis-session-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .single-analysis-session-row .single-analysis-change {
+        grid-column: 1 / -1;
+    }
+
+}
+
+/* =========================================================
+   Transfer 接線中｜dashboard.css END
+========================================================= */
