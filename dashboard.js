@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
 
@@ -21,7 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
         visual: "亮起第一顆燈後，使用者幾秒成功接上第一條線",
         memory: "聲音播放後，燈光提示出現幾次",
         hearing: "聲音播放後，使用者成功接上第二條線的平均時間",
-        analysis: "整合全體玩家的平均表現、參與情形與歷史趨勢"
+        "today-analysis": "統整選擇日期的當日遊玩表現",
+        "compare-analysis": "比較歷史遊玩表現與趨勢"
     };
 
     let elderIds = [];
@@ -373,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderElderCards() {
         peopleGrid.innerHTML = "";
 
-        if (currentGroupPage === "analysis") {
+        if (["today-analysis", "compare-analysis"].includes(currentGroupPage)) {
             updateAllElderCards();
             return;
         }
@@ -702,6 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         peopleGrid.innerHTML = `
             <div class="overview-dashboard">
+                ${currentGroupPage === "today-analysis" ? `
                 <div class="overview-metrics">
                     ${summaryCard(
                         "平均成功率",
@@ -749,8 +752,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <span>總遊玩局數</span>
                             </div>
                             <div>
-                                <strong>${stats.completed}</strong>
-                                <span>成功接線數</span>
+                                <strong>${
+                                    stats.active
+                                        ? (stats.completed / stats.active).toFixed(1)
+                                        : "0"
+                                }</strong>
+                                <span>平均成功次數</span>
                             </div>
                             <div>
                                 <strong>${
@@ -776,6 +783,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     </section>
                 </div>
 
+                ` : ""}
+                ${currentGroupPage === "compare-analysis" ? `
                 <section class="overview-panel overview-history">
                     <div class="overview-history-head">
                         <div>
@@ -795,6 +804,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     ${trends}
                 </section>
+                ` : ""}
             </div>
         `;
 
@@ -805,6 +815,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
+
 
     async function loadTrendPoints(endDate, days, version) {
         const start = new Date(endDate);
@@ -879,7 +890,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 `當日遊玩人數 讀取中... / ${elderIds.length} 人`;
         }
 
-        if (page === "analysis") {
+        if (["today-analysis", "compare-analysis"].includes(page)) {
             peopleGrid.classList.add("overview-mode");
             peopleGrid.innerHTML =
                 '<div class="overview-loading">正在整理全體遊玩資料...</div>';
@@ -905,7 +916,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 `當日遊玩人數 ${playedCount} / ${elderIds.length} 人`;
         }
 
-        if (page === "analysis") {
+        if (["today-analysis", "compare-analysis"].includes(page)) {
+            if (page === "today-analysis") {
+                renderOverview(results);
+                return;
+            }
+
             renderOverview(results, [], true);
 
             const points = await loadTrendPoints(
@@ -959,7 +975,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    
     // ==========================================
     // 單人模式：玩家查詢與新增
     // ==========================================
@@ -1522,6 +1537,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 單人模式：逐局趨勢圖
     // ==========================================
 
+
     function createSingleSessionChart(records, type) {
         const setting = singleMetricSettings[type];
 
@@ -1960,18 +1976,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${labels}
                 </svg>
             </div>
-
         `;
     }
 
     // ==========================================
-    // 單人模式：總分析畫面
+    // 單人模式：今日分析與比對分析畫面
     // ==========================================
 
     function createSingleAnalysisHtml(records, history) {
         const todaySummary = getSingleDaySummary(records);
         const selected = new Date(selectedDate);
-        const dateString = getSelectedDateString();
 
         const metricButtons = Object.entries(
             singleMetricSettings
@@ -1998,6 +2012,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return `
             <div class="single-analysis-dashboard">
 
+                ${currentProfilePage === "today-analysis" ? `
                 <section class="single-analysis-section">
                     <div class="single-analysis-section-heading">
                         <div>
@@ -2084,7 +2099,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         singleAnalysisMetric
                     )}
                 </section>
+                ` : ""}
 
+                ${currentProfilePage === "compare-analysis" ? `
                 <section class="single-analysis-section">
                     <div class="single-analysis-section-heading">
                         <div>
@@ -2115,6 +2132,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
 
+                    <div class="single-analysis-tabs">
+                        ${metricButtons}
+                    </div>
+
                     <h4>
                         ${singleMetricSettings[singleAnalysisMetric].label}
                     </h4>
@@ -2126,6 +2147,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         singleAnalysisMetric
                     )}
                 </section>
+                ` : ""}
             </div>
         `;
     }
@@ -2164,8 +2186,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
-
     // ==========================================
     // 單人模式：各頁籤內容
     // ==========================================
@@ -2203,7 +2223,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         profileContent.textContent = "資料讀取中...";
 
-        // 讀取選擇日期的遊玩紀錄
         const records = await loadElderDailyRecords(
             elderId,
             dateString
@@ -2217,27 +2236,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ======================================
-        // 總分析：整合當日與歷史紀錄
+        // 今日分析與比對分析
         // ======================================
 
-        if (page === "analysis") {
-            profileContent.textContent =
-                "正在整理當日與歷史遊玩資料...";
+        if (["today-analysis", "compare-analysis"].includes(page)) {
+            let history = {};
 
-            const history = await loadSingleAnalysisHistory(
-                elderId,
-                version
-            );
+            if (page === "compare-analysis") {
+                profileContent.textContent =
+                    "正在整理當日與歷史遊玩資料...";
 
-            if (
-                version !== profileRequestVersion ||
-                singleProfilePanel.classList.contains("hidden") ||
-                history === null
-            ) {
-                return;
+                history = await loadSingleAnalysisHistory(
+                    elderId,
+                    version
+                );
+
+                if (
+                    version !== profileRequestVersion ||
+                    singleProfilePanel.classList.contains("hidden") ||
+                    history === null
+                ) {
+                    return;
+                }
             }
 
-            // 確保當日資料與其他頁籤一致
             if (records.length) {
                 history[dateString] = getSingleDaySummary(records);
             }
@@ -2300,10 +2322,12 @@ document.addEventListener("DOMContentLoaded", () => {
             currentProfilePage =
                 button.dataset.profilePage;
 
-            // 總分析使用專屬說明
-            if (currentProfilePage === "analysis") {
+            if (currentProfilePage === "today-analysis") {
                 profilePageDescription.textContent =
-                    "整合當日遊玩表現、逐局進步情形及歷史紀錄比較";
+                    "統整當日整體表現及逐局進步情形";
+            } else if (currentProfilePage === "compare-analysis") {
+                profilePageDescription.textContent =
+                    "比較歷史遊玩表現與不同日期的變化趨勢";
             } else {
                 profilePageDescription.textContent =
                     descriptions[currentProfilePage];
